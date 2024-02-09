@@ -1,16 +1,16 @@
 #include <string>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <cctype>
+#include <cerrno>
+#include <stdio.h>
 #include "server.hpp"
+#include "main.hpp"
 
 int error_print(std::string error_str)
 {
-    std::cout << "\033[1m\033[31mERROR -\033[33m " << error_str << "\033[0m" << std::endl;
-    return 0;
+    std::cerr << RED << "ERROR - " << YELLOW << error_str << RESET << std::endl;
+    return 1;
 }
 
 int string_chart(std::string pass)

@@ -4,7 +4,7 @@ OBJ				= $(SRC:.cpp=.o)
 
 CC				= c++
 
-FLAGS			= -fsanitize=address -g -std=c++98
+FLAGS			= -Wall -Wextra -Werror -fsanitize=address -g -std=c++98
 
 NAME			= ircserv
 
@@ -24,4 +24,7 @@ fclean: 		clean
 
 re: 			fclean $(NAME)
 
-.PHONY: all clean fclean re
+test:	all
+		./ircserv 8686 abc
+
+.PHONY: all clean fclean re test

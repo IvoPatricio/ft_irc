@@ -2,6 +2,8 @@
 # define SERVER_HPP
 
 #include <string>
+#include "server.hpp"
+#include "main.hpp"
 
 class Server
 {
@@ -12,7 +14,7 @@ public:
     Server(int port, std::string password);
     ~Server();
 
-    int const getPort() const;
+    int getPort() const;
     std::string const getPassword() const;
     int ServerStartUp();
 };
