@@ -1,10 +1,3 @@
-#include <string>
-#include <iostream>
-#include <cstdlib>
-#include <cctype>
-#include <cerrno>
-#include <stdio.h>
-#include "server.hpp"
 #include "main.hpp"
 
 int error_print(std::string error_str)

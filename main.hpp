@@ -1,8 +1,13 @@
 #ifndef MAIN_HPP
 # define MAIN_HPP
 
+#include <string>
+#include <iostream>
+#include <cstdlib>
+#include <cctype>
+#include <cerrno>
+#include <stdio.h>
 #include "server.hpp"
-#include "main.hpp"
 
 #define RED "\033[1m\033[31m"
 #define YELLOW "\033[33m"

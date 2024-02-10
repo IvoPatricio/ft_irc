@@ -2,7 +2,16 @@
 # define SERVER_HPP
 
 #include <string>
-#include "server.hpp"
+#include <cstring>
+#include <unistd.h>
+#include <stdio.h>
+#include <cstdlib>
+#include <iostream>
+#include <stdlib.h>
+#include <cctype>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <sys/poll.h>
 #include "main.hpp"
 
 class Server

@@ -1,16 +1,4 @@
-#include <string>
-#include <cstring>
-#include <unistd.h>
-#include <stdio.h>
-#include <cstdlib>
-#include <iostream>
-#include <stdlib.h>
-#include <cctype>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/poll.h>
 #include "server.hpp"
-#include "main.hpp"
 
 Server::Server(int port, std::string password) : _port(port), _password(password)
 {
