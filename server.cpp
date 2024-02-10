@@ -20,12 +20,66 @@ std::string const Server::getPassword() const
     return _password;
 }
 
+
+const int MAX_CLIENTS = 10;
+const int MAX_BUFFER_SIZE = 1024;
+
+struct Client {
+    int socket;
+    std::string nickname;
+    // Add more fields as needed
+};
+
+std::vector<Client> clients;
+
+void handleNewConnection(int serverSocket, std::vector<pollfd>& pollFds) {
+    struct sockaddr_in clientAddr;
+    socklen_t clientLen = sizeof(clientAddr);
+
+    int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientLen);
+    // Handle error checking for accept()
+
+    // Set non-blocking
+    fcntl(clientSocket, F_SETFL, fcntl(clientSocket, F_GETFL, 0) | O_NONBLOCK);
+
+    // Add the new client to the vector
+    Client newClient;
+    newClient.socket = clientSocket;
+    newClient.nickname = "";
+    clients.push_back(newClient);
+
+    std::cout << "New connection from " << inet_ntoa(clientAddr.sin_addr) << std::endl;
+
+    // Add new client to pollFds
+    pollfd newClientPollfd;
+    newClientPollfd.fd = clientSocket;
+    newClientPollfd.events = POLLIN;
+    newClientPollfd.revents = 0;
+    pollFds.push_back(newClientPollfd);
+}
+
+void handleDataFromClient(size_t clientIndex, std::vector<pollfd>& pollFds) {
+    char buffer[MAX_BUFFER_SIZE];
+    int bytesRead = recv(clients[clientIndex].socket, buffer, sizeof(buffer), 0);
+
+    if (bytesRead > 0) {
+        // Process received data
+        // Implement IRC protocol handling here
+    } else if (bytesRead == 0 || (bytesRead == -1 && errno != EWOULDBLOCK)) {
+        // Connection closed or error (other than non-blocking)
+        // Remove the client from the vector
+        close(clients[clientIndex].socket);
+        clients.erase(clients.begin() + clientIndex);
+        pollFds.erase(pollFds.begin() + clientIndex + 1); // +1 to account for server socket at index 0
+    }
+}
+
 int Server::ServerStartUp()
 {
     std::cout << "Server Port: " << getPort() << std::endl;
     std::cout << "Server Password: " << getPassword() << std::endl;
 
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    /*int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     // Step 1: Create a socket
     if (server_socket == -1) 
     {
@@ -72,7 +126,7 @@ int Server::ServerStartUp()
             error_print("Poll failed");
             break;
         }
-
+        //https://www.youtube.com/watch?v=dEHZb9JsmOU
         if (poll_result > 0) 
         {
             if (fds[0].revents & POLLIN) 
@@ -98,18 +152,38 @@ int Server::ServerStartUp()
                     std::cout << "Client connected to the server: " << client_socket << std::endl;
                     while (1)
                     {
+                        const char *response_const char *response_data = "Client connected to the server!";
+                    if (send(client_socket, response_data, strlen(response_data), 0) == -1)
+                    {
+                        error_print("Send failed");
+                        break;
+                    }data = "Client connected to the server!";
+                        if (send(client_socket, response_data, strlen(response_data), 0) == -1)
+                        {
+                            error_print("Send failed");
+                            break;
+                        }
+                        ssize_t bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+                        if (bytes_received == -1)
+                        {
+                            error_print("Recv failed");
+                            break;
+                        }
+                        if (bytes_received == 0)
+                        {
+                            std::cout << "Client disconnected" << std::endl;
+                            close(client_socket);
+                            break;
+                        }
+    
+                        buffer[bytes_received] = '\0';
+                        std::cout << "Received from client " << client_socket << ": " << buffer << std::endl;
+    
                         if (strncmp(buffer, "/nick", 5) == 0) 
                         {
-                            std::cout << "/Nick" << std::endl;
-                        }
-                        int i = 0;
-                        while (i < 99999)
-                        {
-                            std::cout << i << std::endl;
+                            std::cout << "/nick" << std::endl;
                         }
                     }
-
-
 
                     // Simulate sending a response back to the client
                     const char *response_data = "Client connected to the server!";
@@ -127,5 +201,44 @@ int Server::ServerStartUp()
     std::cout << "test" << std::endl;
     // Step 8: Close the server socket
     close(server_socket);
+    return 0;*/
+    int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    // Handle error checking for socket()
+
+    struct sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = INADDR_ANY;
+    serverAddr.sin_port = htons(getPort()); // Change port as needed
+
+    bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+    // Handle error checking for bind()
+
+    listen(serverSocket, MAX_CLIENTS);
+    // Handle error checking for listen()
+
+    std::vector<pollfd> pollFds;
+
+    pollfd serverPollfd;
+    serverPollfd.fd = serverSocket;
+    serverPollfd.events = POLLIN;
+    serverPollfd.revents = 0;
+    pollFds.push_back(serverPollfd);
+
+    while (true) {
+        int events = poll(&pollFds[0], pollFds.size(), -1);
+
+        if (events > 0) {
+            for (size_t i = 0; i < pollFds.size(); ++i) {
+                if (pollFds[i].revents & POLLIN) {
+                    if (pollFds[i].fd == serverSocket) {
+                        handleNewConnection(serverSocket, pollFds);
+                    } else {
+                        handleDataFromClient(i - 1, pollFds);
+                    }
+                }
+            }
+        }
+    }
+    close(serverSocket);
     return 0;
 }

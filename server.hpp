@@ -1,17 +1,18 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include <iostream>
+#include <vector>
 #include <string>
 #include <cstring>
-#include <unistd.h>
-#include <stdio.h>
-#include <cstdlib>
-#include <iostream>
-#include <stdlib.h>
-#include <cctype>
-#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/poll.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>  // Include this for fcntl
+#include <algorithm> // Include this for std::remove_if
+#include <poll.h>
+
 #include "main.hpp"
 
 class Server
