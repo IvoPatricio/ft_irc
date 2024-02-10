@@ -91,7 +91,7 @@ int Server::ServerStartUp()
             {
                 // Step 5: Accept a connection
                 int client_socket = accept(server_socket, NULL, NULL);
-                if (client_socket == -1) 
+                if (client_socket == -1)
                 {
                     error_print("Accept failed");
                     break;
@@ -107,21 +107,36 @@ int Server::ServerStartUp()
                 if (bytes_received > 0) 
                 {
                     buffer[bytes_received] = '\0';
-                    std::cout << "Received data: " << buffer << std::endl;
+                    std::cout << "Client connected to the server: " << client_socket << std::endl;
+                    while (1)
+                    {
+                        if (strncmp(buffer, "/nick", 5) == 0) 
+                        {
+                            std::cout << "/Nick" << std::endl;
+                        }
+                        int i = 0;
+                        while (i < 99999)
+                        {
+                            std::cout << i << std::endl;
+                        }
+                    }
+
+
 
                     // Simulate sending a response back to the client
-                    const char* response_data = "Hello, Irssi client!";
+                    const char *response_data = "Client connected to the server!";
                     if (send(client_socket, response_data, strlen(response_data), 0) == -1)
                     {
                         error_print("Send failed");
                         break;
                     }
                 }
-                // Step 7: Close the client socket
+                std::cout << "Client disconnected" << std::endl;
                 close(client_socket);
             }
         }
     }
+    std::cout << "test" << std::endl;
     // Step 8: Close the server socket
     close(server_socket);
     return 0;
