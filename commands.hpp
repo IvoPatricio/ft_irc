@@ -1,28 +1,27 @@
-class commands
+#ifndef COMMANDS_HPP
+# define COMMANDS_HPP
+
+# include "server.hpp"
+
+class Commands
 {
 private:
-    std::string _nick;
-    std::string _username;
-    std::string _channel;
-    std::string _sendPrivate;
-    std::string _receivePrivate;
-    std::string _kick;
-    std::string _invite;
-    std::string _topic;
-    std::string _mode;
+    Commands();
+    ~Commands();
+
 public:
-    commands();
-    ~commands();
-    void cmdNick(std::string _nick);
-    void cmdUsername(std::string _username);
-    void cmdChannel(std::string _channel);
-    void cmdSendPrivate(std::string _sendPrivate);
-    void cmdReceivePrivate(std::string _receivePrivate);
-    void cmdKick(std::string _kick);
-    void cmdInvite(std::string _invite);
-    void cmdTopic(std::string _topic);
-    void cmdMode(std::string _mode);
+    static void cmdNick(std::string nick);
+    static void cmdUsername(std::string username);
+    static void cmdChannel(std::string channel);
+    static void cmdSendPrivate(std::string sendPrivate);
+    static void cmdReceivePrivate(std::string receivePrivate);
+    static void cmdKick(std::string kick);
+    static void cmdInvite(std::string invite);
+    static void cmdTopic(std::string topic);
+    static void cmdMode(std::string mode);
 
     //setters needed? or inside the CMDs
 
 };
+
+#endif

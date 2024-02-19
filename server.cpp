@@ -1,12 +1,17 @@
 #include "server.hpp"
 
-Server::Server(int port, std::string password) : _port(port), _password(password)
+Server::Server(int port, std::string password) : _port(port), _password(password), _clients()
 {
     std::cout << "+Server Constructor called" << std::endl;
 }
 
 Server::~Server()
 {
+    std::map<int, Client*>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        delete it->second;
+    }
     std::cout << "-Server Destructor called" << std::endl;
 }
 
@@ -22,6 +27,26 @@ std::string const Server::getPassword() const
 
 bool isRunning = true;
 
+void Server::checkCmd(Client *clt, char *cmd)
+{
+    if (strncmp(cmd, "/pass ", 5) == 0) 
+    {
+        clt->cmdPassword(cmd, getPassword());
+    }
+    else if (strncmp(cmd, "/username ", 9) == 0) 
+    {
+        clt->cmdNick(cmd);
+    }
+    else if (strncmp(cmd, "/nick ", 5) == 0) 
+    {
+        clt->cmdNick(cmd);
+    }
+    else
+    {
+        error_print("Command does not exist");
+    }
+}
+
 void signalHandler(int signal) 
 {
     if (signal == SIGINT) 
@@ -30,6 +55,7 @@ void signalHandler(int signal)
         isRunning = false;
     }
 }
+
 int Server::ServerStartUp()
 {
     std::cout << "Server Port: " << getPort() << std::endl;
@@ -95,6 +121,8 @@ int Server::ServerStartUp()
                     error_print("Accept failed");
                     break;
                 }
+                // adding a clt to the map
+                _clients[client_socket] = new Client(client_socket);
                 // Step 6: Read and write data
                 char buffer[1024];
                 ssize_t bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
@@ -115,11 +143,11 @@ int Server::ServerStartUp()
                             error_print("Send failed");
                             break;
                         }
-                        if (send(client_socket, response_data, strlen(response_data), 0) == -1)
-                        {
-                            error_print("Send failed");
-                            break;
-                        }
+                        // if (send(client_socket, response_data, strlen(response_data), 0) == -1)
+                        // {
+                        //     error_print("Send failed");
+                        //     break;
+                        // }
                         ssize_t bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
                         if (bytes_received == -1)
                         {
@@ -135,11 +163,9 @@ int Server::ServerStartUp()
     
                         buffer[bytes_received] = '\0';
                         std::cout << "Received from client " << client_socket << ": " << buffer << std::endl;
-    
-                        if (strncmp(buffer, "/nick", 5) == 0) 
-                        {
-                            std::cout << "/nick" << std::endl;
-                        }
+                        // check for the cmd from the clt
+                        if (_clients.find(client_socket) != _clients.end())
+                            checkCmd(_clients[client_socket], buffer);
                     }
 
                     // Simulate sending a response back to the client
