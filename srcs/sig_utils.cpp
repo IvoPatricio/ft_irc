@@ -29,7 +29,7 @@ void signal_handlers()
     siga.sa_handler = doSignals;
     siga.sa_flags = 0;
 
-    //update signals values when clients leave
+    //fix the values of the clients when using a signal
     sigaction(SIGINT, &siga, NULL);
     sigaction(SIGQUIT, &siga, NULL);
 }

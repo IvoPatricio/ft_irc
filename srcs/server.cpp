@@ -115,7 +115,8 @@ int Server::ServerStartUp()
                 setIsRunning(false);
             }
 
-            // We will use this client class when the default int clientSockets[MAX]/client_socket works correctly, just testing right now
+            // adding a clt to the map
+            // We will use this client class after testing
             _clients[client_socket] = new Client(client_socket);
 
             // Add the new client socket (IN THE FUTURE CLASS CLIENT)
@@ -136,7 +137,7 @@ int Server::ServerStartUp()
             // Send a welcome message to the client
             sprintf(buffer, "server: client %d just arrived\n", client_id + 1);
             send(client_socket, buffer, strlen(buffer), 0);
-            // Store the client socket for future references
+            // Store the client socket for the future reference
             client_sockets[client_id] = client_socket;
             client_id++;
         }
@@ -167,12 +168,12 @@ int Server::ServerStartUp()
                 } 
                 else
                 {
-                    // check for the cmd from the clt
-                    if (_clients.find(client_socket) != _clients.end())
-                        checkCmd(_clients[client_socket], buffer);   
                     // Broadcast the received message to all other clients
                     buffer[bytesRead] = '\0';
 
+                    // check for the cmd from the clt
+                    //if (_clients.find(client_socket) != _clients.end())
+                    //    checkCmd(_clients[client_socket], buffer);
                     char server_buffer[BUFFER_SIZE];
                     sprintf(server_buffer, "client %d: %s\n", i, buffer);
 
