@@ -167,6 +167,9 @@ int Server::ServerStartUp()
                 } 
                 else
                 {
+                    // check for the cmd from the clt
+                    if (_clients.find(client_socket) != _clients.end())
+                        checkCmd(_clients[client_socket], buffer);   
                     // Broadcast the received message to all other clients
                     buffer[bytesRead] = '\0';
 
