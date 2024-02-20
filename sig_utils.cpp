@@ -7,7 +7,7 @@ void setIsRunning(bool state)
     isRunning = state;
 }
 
-void doSignals(int signal) 
+void doSignals(int signal)
 {
     if (signal == SIGINT) 
     {
@@ -27,7 +27,7 @@ void doSignals(int signal)
     }
 }
 
-void signal_handlers() 
+void signal_handlers()
 {
     struct sigaction siga;
     siga.sa_handler = doSignals;
