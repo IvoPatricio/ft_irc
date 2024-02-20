@@ -7,7 +7,6 @@
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <algorithm> 
@@ -18,6 +17,9 @@
 #include "client.hpp"
 #include "main.hpp"
 #include "sig_utils.hpp"
+
+#define MAX 1024
+#define BUFFER_SIZE 10000
 
 class Client;
 
