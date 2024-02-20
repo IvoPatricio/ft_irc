@@ -97,9 +97,9 @@ int Server::ServerStartUp()
 
     int maxSocket = server_socket;
     for (int i = 1; i <= MAX; i++)
-        fds[i].fd = -1;  // Creating the clients FDS
+        fds[i].fd = -1;  // Creating the pool FDS
 
-    // Main server loop
+    // main server loop
     while (isRunning == true) 
     {
         // Step 4: Use poll to wait for events
@@ -107,7 +107,7 @@ int Server::ServerStartUp()
         if (poll_result == -1) 
         {
             error_print("Poll failed");
-            setIsRunning(false);
+            break;
         }
         if (poll_result > 0) 
         {
@@ -118,7 +118,7 @@ int Server::ServerStartUp()
                 if (client_socket == -1)
                 {
                     error_print("Accept failed");
-                    setIsRunning(false);
+                    break;
                 }
                 // We will use this client class when the default int clientSockets[MAX]/client_socket works correctly, just testing right now
                 _clients[client_socket] = new Client(client_socket);
@@ -141,6 +141,7 @@ int Server::ServerStartUp()
                 // Store the client socket for future references
                 clientSockets[next_id++] = client_socket;
 
+                //if (fds[0].revents & POLLOUT)
                 // Check each client socket for activity
                 for (int i = 1; i <= MAX; i++) 
                 {
