@@ -17,6 +17,7 @@ void doSignals(int signal)
     else if (signal == SIGQUIT)
     {
         std::cout << "Received SIGNAL to terminate forcefully. Shutting down the server" << std::endl;
+        setIsRunning(false);
         //forcing core dump
         abort();
     }
@@ -24,6 +25,7 @@ void doSignals(int signal)
     {
         std::cout << "Received SIGNAL to suspend. Shutting down the server" << std::endl;
         //add suspended state;
+        //restart server / kill the clients
     }
 }
 
