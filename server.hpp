@@ -18,8 +18,8 @@
 #include "main.hpp"
 #include "sig_utils.hpp"
 
-#define MAX 1024
-#define BUFFER_SIZE 10000
+#define MAX_FDS 1024
+#define BUFFER_SIZE 200000
 
 class Client;
 

@@ -21,12 +21,6 @@ void doSignals(int signal)
         //forcing core dump
         abort();
     }
-    else if (signal == SIGTSTP)
-    {
-        std::cout << "Received SIGNAL to suspend. Shutting down the server" << std::endl;
-        //add suspended state;
-        //restart server / kill the clients
-    }
 }
 
 void signal_handlers()
@@ -35,7 +29,7 @@ void signal_handlers()
     siga.sa_handler = doSignals;
     siga.sa_flags = 0;
 
+    //update signals values when clients leave
     sigaction(SIGINT, &siga, NULL);
     sigaction(SIGQUIT, &siga, NULL);
-    sigaction(SIGTSTP, &siga, NULL);
 }
