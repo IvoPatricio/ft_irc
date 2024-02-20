@@ -34,10 +34,6 @@ public:
 
     //Server startup
     int ServerStartUp();
-    //void signalHandler(int signal);
-    //void doSignals(int signal);
-    //void signal_handlers();
-    //void setIsRunning(bool state);
 
     //getters
     int getPort() const;
