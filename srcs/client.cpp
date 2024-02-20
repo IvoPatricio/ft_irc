@@ -1,4 +1,4 @@
-#include "client.hpp"
+#include "../includes/client.hpp"
 
 Client::Client(int clientNum) : _clientNum(clientNum), _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username(""), _password("")
 {

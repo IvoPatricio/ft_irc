@@ -1,4 +1,4 @@
-#include "server.hpp"
+#include "../includes/server.hpp"
 
 Server::Server(int port, std::string password) : _port(port), _password(password), _clients()
 {

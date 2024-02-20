@@ -1,4 +1,4 @@
-#include "main.hpp"
+#include "../includes/main.hpp"
 
 int error_print(std::string error_str)
 {
