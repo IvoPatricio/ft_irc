@@ -25,8 +25,6 @@ std::string const Server::getPassword() const
     return _password;
 }
 
-bool isRunning = true;
-
 void Server::checkCmd(Client *clt, char *cmd)
 {
     if (strncmp(cmd, "/pass ", 5) == 0) 
@@ -47,21 +45,12 @@ void Server::checkCmd(Client *clt, char *cmd)
     }
 }
 
-void signalHandler(int signal) 
-{
-    if (signal == SIGINT) 
-    {
-        std::cout << "Received SIGNAL. Shutting down the server" << std::endl;
-        isRunning = false;
-    }
-}
-
 int Server::ServerStartUp()
 {
     std::cout << "Server Port: " << getPort() << std::endl;
     std::cout << "Server Password: " << getPassword() << std::endl;
 
-    signal(SIGINT, signalHandler);
+    signal_handlers();
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     // Step 1: Create a socket
     if (server_socket == -1) 

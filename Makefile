@@ -1,4 +1,4 @@
-SRC				= main.cpp server.cpp client.cpp
+SRC				= main.cpp server.cpp client.cpp sig_utils.cpp
 
 OBJ				= $(SRC:.cpp=.o)
 

@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 #include "main.hpp"
+#include "sig_utils.hpp"
 
 class Client
 {

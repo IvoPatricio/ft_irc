@@ -25,7 +25,7 @@ int string_digit(std::string port)
 {
     unsigned long i = 0;
 
-    if (port.size() > 5)
+    if (port.size() > 5 || atoi(port.c_str()) <= 1023)
         return 1;
     while (i < port.size())
     {
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     if (argc != 3)
         return (error_print("Arguments have to be 3 (./ircserv <port> <password>)"));
 
-    if (string_digit(argv[1]) == 1 || string_digit(argv[1]) == 2)
+    if (string_digit(argv[1]) != 0)
     {
         if (string_digit(argv[1]) == 1)
             return (error_print("Invalid port value"));
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
             return (error_print("Invalid port size"));
     }
 
-    if (string_chart(argv[2]) == 1 || string_chart(argv[2]) == 2)
+    if (string_chart(argv[2]) != 0)
     {
         if (string_chart(argv[2]) == 1)
             return (error_print("Invalid password size"));
