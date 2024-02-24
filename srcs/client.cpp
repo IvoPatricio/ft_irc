@@ -1,6 +1,8 @@
 #include "../includes/client.hpp"
 
-Client::Client(int clientNum) : _clientNum(clientNum), _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username(""), _password("")
+Client::Client(int clientNum)
+    : _clientNum(clientNum), _admPerm(false), _auth(false),
+    _userDef(false), _nickDef(false), _nick(""), _username(""), _password("")
 {
 
 }
@@ -21,26 +23,26 @@ void Client::cmdPassword(std::string insertPassword, std::string serverPassword)
 
 void Client::cmdUsername(std::string username)
 {
-    if (_auth)
+    if (!checkOneWord(username.substr(9)))
     {
-        _username = username.substr(username.find_first_not_of(" ", 9));
-        _userDef = true;
-        std::cout << "Your username is now " << _username << std::endl;
+        error_print("Username has to be one word!");
+        return ;
     }
-    else
-        error_print("Not Yet Authenticated - '/pass [password] to authenticate'");
+    _username = username.substr(username.find_first_not_of(" ", 9));
+    _userDef = true;
+    std::cout << "Your username is now " << _username << std::endl;
 }
 
 void Client::cmdNick(std::string nick)
 {
-    if (_auth)
+    if (!checkOneWord(nick.substr(5)))
     {
-        _nick = nick.substr(nick.find_first_not_of(" ", 5));
-        _nickDef = true;
-        std::cout << "Your nick is now " << _nick << std::endl;
+        error_print("Nick has to be one word!");
+        return ;
     }
-    else
-        error_print("Not Yet Authenticated - '/pass [password] to authenticate'");
+    _nick = nick.substr(nick.find_first_not_of(" ", 5));
+    _nickDef = true;
+    std::cout << "Your nick is now " << _nick << std::endl;
 }
 
 // void Client::cmdJoinChannel(std::string channel)
@@ -84,7 +86,6 @@ void Client::cmdNick(std::string nick)
 // {
 
 // }
-
 
 // getters
 bool Client::getAuth()

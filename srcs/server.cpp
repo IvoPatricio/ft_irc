@@ -7,10 +7,15 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 
 Server::~Server()
 {
-    std::map<int, Client*>::iterator it;
-    for (it = _clients.begin(); it != _clients.end(); ++it)
+    std::map<int, Client*>::iterator itClt;
+    for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
-        delete it->second;
+        delete itClt->second;
+    }
+    std::map<std::string, Channel*>::iterator itChannel;
+    for (itChannel = _channels.begin(); itChannel != _channels.end(); ++itChannel)
+    {
+        delete itChannel->second;
     }
     std::cout << "-Server Destructor called" << std::endl;
 }
@@ -25,23 +30,39 @@ std::string const Server::getPassword() const
     return _password;
 }
 
-void Server::checkCmd(Client *clt, char *cmd)
+void Server::executeCmd(Client *clt, char *cmd)
 {
-    if (strncmp(cmd, "/pass ", 5) == 0) 
+    // (void)clt;
+    // (void)cmd;
+    std::string cmdValue = extractAfterCmd(cmd);
+    if (strncmp(cmd, "/join ", 6) == 0)
     {
+        Command::joinChannel(_channels, clt, cmdValue);
+    }
+    else if (strncmp(cmd, "/mode ", 6) == 0)
+    {
+        
+    }
+}
+
+void Server::authProcess(Client *clt, char *cmd)
+{
+    if (!clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
         clt->cmdPassword(cmd, getPassword());
-    }
-    else if (strncmp(cmd, "/username ", 9) == 0) 
-    {
-        clt->cmdNick(cmd);
-    }
-    else if (strncmp(cmd, "/nick ", 5) == 0) 
-    {
-        clt->cmdNick(cmd);
-    }
+    else if (!clt->getAuth())
+        error_print("Use '/pass [password]' to authenticate");
+    else if (clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
+        error_print("Already Authenticated!");
     else
     {
-        error_print("Command does not exist");
+        if (strncmp(cmd, "/nick ", 6) == 0)
+            clt->cmdNick(cmd);// maybe pass string without cmd '/nick'
+        else if (strncmp(cmd, "/username ", 10) == 0)
+            clt->cmdUsername(cmd);
+        else if (!clt->getNickDef() || !clt->getUserDef())
+            error_print("Define username and nickname! Use '/user [username]' and '/nick [nickname]' to define one");
+        else
+            executeCmd(clt, cmd);
     }
 }
 
@@ -172,10 +193,10 @@ int Server::ServerStartUp()
                     buffer[bytesRead] = '\0';
 
                     // check for the cmd from the clt
-                    //if (_clients.find(client_socket) != _clients.end())
+                    // if (_clients.find(client_socket) != _clients.end())
                     //    checkCmd(_clients[client_socket], buffer);
                     char server_buffer[BUFFER_SIZE];
-                    sprintf(server_buffer, "client %d: %s\n", i, buffer);
+                    // sprintf(server_buffer, "client %d: %s\n", i, buffer);
 
                     for (int j = 1; j <= MAX_FDS; j++) 
                     {

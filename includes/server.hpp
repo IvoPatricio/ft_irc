@@ -14,7 +14,9 @@
 #include <csignal>
 #include <map>
 
+#include "commands.hpp"
 #include "client.hpp"
+#include "channel.hpp"
 #include "main.hpp"
 #include "sig_utils.hpp"
 
@@ -22,6 +24,7 @@
 #define BUFFER_SIZE 200000
 
 class Client;
+class Channel;
 
 class Server
 {
@@ -29,6 +32,7 @@ private:
     int _port;
     std::string _password;
     std::map<int, Client*> _clients;
+    std::map<std::string, Channel*> _channels;
 
 public:
     Server(int port, std::string password);
@@ -42,7 +46,8 @@ public:
     std::string const getPassword() const;
 
     //commands
-    void checkCmd(Client *clt, char *cmd);
+    void authProcess(Client *clt, char *cmd);
+    void executeCmd(Client *clt, char *cmd);
     
 };
 
