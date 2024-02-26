@@ -15,8 +15,19 @@ private:
     ~Command();
 public:
 
-    static void joinChannel(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
-
+    // regular cmds
+    static void password(Client *clt, std::string insertPassword, std::string svPassword);
+    static void username(Client *clt, std::string username);
+    static void nick(Client *clt, std::string nick);
+    static void pMsg(std::map<int, Client*> cltMap, int cltRecv, Client *cltSend, std::string cmd);
+    static void join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
+    
+    // operator cmds
+    // TODO: check args needed
+    static void kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
+    static void invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
+    static void topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
+    static void mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
 };
 
 

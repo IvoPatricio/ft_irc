@@ -30,14 +30,22 @@ std::string const Server::getPassword() const
     return _password;
 }
 
+// TODO: change func to commands
+// maybe do a func to get command '/cmd'
 void Server::executeCmd(Client *clt, char *cmd)
 {
-    // (void)clt;
-    // (void)cmd;
     std::string cmdValue = extractAfterCmd(cmd);
     if (strncmp(cmd, "/join ", 6) == 0)
     {
-        Command::joinChannel(_channels, clt, cmdValue);
+        Command::join(_channels, clt, cmdValue);
+    }
+    else if (strncmp(cmd, "/kick ", 6) == 0)
+    {
+        
+    }
+    else if (strncmp(cmd, "/invite ", 8) == 0)
+    {
+
     }
     else if (strncmp(cmd, "/mode ", 6) == 0)
     {
@@ -47,8 +55,9 @@ void Server::executeCmd(Client *clt, char *cmd)
 
 void Server::authProcess(Client *clt, char *cmd)
 {
+    std::string cmdValue = extractAfterCmd(cmd);
     if (!clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
-        clt->cmdPassword(cmd, getPassword());
+        Command::password(clt, cmdValue, getPassword());
     else if (!clt->getAuth())
         error_print("Use '/pass [password]' to authenticate");
     else if (clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
@@ -56,9 +65,9 @@ void Server::authProcess(Client *clt, char *cmd)
     else
     {
         if (strncmp(cmd, "/nick ", 6) == 0)
-            clt->cmdNick(cmd);// maybe pass string without cmd '/nick'
+            Command::nick(clt, cmdValue);
         else if (strncmp(cmd, "/username ", 10) == 0)
-            clt->cmdUsername(cmd);
+            Command::username(clt, cmdValue);
         else if (!clt->getNickDef() || !clt->getUserDef())
             error_print("Define username and nickname! Use '/user [username]' and '/nick [nickname]' to define one");
         else

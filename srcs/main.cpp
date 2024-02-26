@@ -1,12 +1,22 @@
 #include "../includes/main.hpp"
 
+void parseMsg(std::string *msgArray, std::string fullMsg)
+{
+    size_t firstWordEnd = fullMsg.find_first_not_of(" ");
+    msgArray[0] = fullMsg.substr(0, firstWordEnd);
+    size_t secondWord = fullMsg.find_first_not_of(" ", firstWordEnd + 1);
+    msgArray[1] = fullMsg.substr(secondWord);
+}
+
 std::string extractAfterCmd(std::string cmd)
 {
     size_t firstWord = cmd.find_first_not_of(" ");
     if (firstWord == std::string::npos)
         return "";
-    size_t secondWord = cmd.find_first_of(" ", firstWord + 1);
-    return cmd.substr(secondWord);
+    size_t firstWordEnd = cmd.find_first_of(" ", firstWord + 1);
+    size_t secondWord = cmd.find_first_not_of(" ", firstWordEnd);
+    size_t endPos = cmd.find_last_not_of(" ");
+    return cmd.substr(secondWord, endPos);
 }
 
 int checkOneWord(std::string line)

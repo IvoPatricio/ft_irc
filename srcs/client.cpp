@@ -2,7 +2,7 @@
 
 Client::Client(int clientNum)
     : _clientNum(clientNum), _admPerm(false), _auth(false),
-    _userDef(false), _nickDef(false), _nick(""), _username(""), _password("")
+    _userDef(false), _nickDef(false), _nick(""), _username("")
 {
 
 }
@@ -11,36 +11,22 @@ Client::~Client() {}
 
 
 // regular cmds
-void Client::cmdPassword(std::string insertPassword, std::string serverPassword)
+void Client::authenticate()
 {
-    _password = insertPassword.substr(insertPassword.find_first_not_of(" ", 5));
-    if (_password.compare(serverPassword) == 0)
-        _auth = true;
-    else
-        error_print("Wrong Password");
-    std::cout << "Password Accepted - You been authenticated" << _password << std::endl;
+    _auth = true;
+    std::cout << "Password Accepted - You been authenticated" << std::endl;
 }
 
-void Client::cmdUsername(std::string username)
+void Client::setUsername(std::string username)
 {
-    if (!checkOneWord(username.substr(9)))
-    {
-        error_print("Username has to be one word!");
-        return ;
-    }
-    _username = username.substr(username.find_first_not_of(" ", 9));
+    _username = username;
     _userDef = true;
     std::cout << "Your username is now " << _username << std::endl;
 }
 
-void Client::cmdNick(std::string nick)
+void Client::setNick(std::string nick)
 {
-    if (!checkOneWord(nick.substr(5)))
-    {
-        error_print("Nick has to be one word!");
-        return ;
-    }
-    _nick = nick.substr(nick.find_first_not_of(" ", 5));
+    _nick = nick;
     _nickDef = true;
     std::cout << "Your nick is now " << _nick << std::endl;
 }
@@ -101,4 +87,9 @@ bool Client::getUserDef()
 bool Client::getNickDef()
 {
     return _nickDef;
+}
+
+std::string Client::getNick()
+{
+    return _nick;
 }
