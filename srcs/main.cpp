@@ -2,6 +2,7 @@
 
 void parseMsg(std::string *msgArray, std::string fullMsg)
 {
+    // TODO: This logic is wrong. firstWordEnd is the beginning and not the end
     size_t firstWordEnd = fullMsg.find_first_not_of(" ");
     msgArray[0] = fullMsg.substr(0, firstWordEnd);
     size_t secondWord = fullMsg.find_first_not_of(" ", firstWordEnd + 1);
