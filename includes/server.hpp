@@ -36,13 +36,13 @@ class Server
 private:
     int _port;
     std::string _password;
-
+    std::map<int, Client*> _clients;
+    std::map<std::string, Channel*> _channels;
+    
     struct pollfd *pfds;
 
     int _server_socket;
     int _server_listener;
-    std::map<int, Client*> _clients;
-    std::map<std::string, Channel*> _channels;
 
 public:
     Server(int port, std::string password);

@@ -8,11 +8,11 @@ class Client
 {
 private:
     int         _client_fd;
+    struct sockaddr_in _address;
     bool        _admPerm;
     bool        _auth;
     bool        _userDef;
     bool        _nickDef;
-    struct sockaddr_in _address;
     std::string _nick;
     std::string _username;
     std::string _channel;

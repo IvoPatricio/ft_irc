@@ -1,6 +1,6 @@
 #include "../includes/client.hpp"
 
-Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd), _address(address), _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username(""), _password("")
+Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd), _address(address), _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username("")
 {
     std::cout << "Client created" << std::endl;
 }

@@ -74,7 +74,7 @@ void Server::History()
 void Server::ServerError(std::string error_str)
 {
     error_print(error_str);
-    isRunning == false;
+    isRunning = false;
 }
 
 // Add a new file descriptor to the poll set
@@ -103,7 +103,7 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
     socklen_t addrlen;
     char remoteIP[INET_ADDRSTRLEN];
     int client_fd = 0;
-    int client_id = 1;
+    // int client_id = 1;
 
     // Handle new connection
     addrlen = sizeof clienteAddr;
@@ -207,7 +207,7 @@ int Server::ServerStartUp()
                             {
                                 printf("BUFF Content before sending to client: %s", buf);
                                 if (Check_if_buf_cmd(buf) == 0)
-                                    checkCmd(_clients[dest_fd], buf);
+                                    authProcess(_clients[dest_fd], buf);
                                 else if (send(dest_fd, buf, nbytes, 0) < 0) 
                                     error_print("Send failed");
                                 memset(buf, '\0', sizeof(buf));
@@ -216,7 +216,7 @@ int Server::ServerStartUp()
                             else if (fd_count == 2)
                             {
                                 if (Check_if_buf_cmd(buf) == 0)
-                                    checkCmd(_clients[dest_fd], buf);
+                                    authProcess(_clients[dest_fd], buf);
                                 memset(buf, '\0', sizeof(buf));
                             }
                         }
