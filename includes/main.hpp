@@ -14,6 +14,9 @@
 #define YELLOW "\033[33m"
 #define RESET "\033[0m"
 
+void parseMsg(std::string *msgArray, std::string fullMsg);
+std::string extractAfterCmd(std::string cmd);
+int checkOneWord(std::string line);
 int string_digit(std::string port);
 int string_chart(std::string pass);
 int error_print(std::string error_str);

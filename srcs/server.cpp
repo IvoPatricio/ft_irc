@@ -7,34 +7,62 @@ Server::Server(int port, std::string password) : _port(port), _password(password
 
 Server::~Server()
 {
-    std::map<int, Client*>::iterator it;
-    for (it = _clients.begin(); it != _clients.end(); ++it)
+    std::map<int, Client*>::iterator itClt;
+    for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
-        delete it->second;
+        delete itClt->second;
+    }
+    std::map<std::string, Channel*>::iterator itChannel;
+    for (itChannel = _channels.begin(); itChannel != _channels.end(); ++itChannel)
+    {
+        delete itChannel->second;
     }
     close(_server_listener);
     std::cout << "Server shutting down" << std::endl;
 }
 
-void Server::checkCmd(Client *clt, char *cmd)
+// TODO: change func to commands
+// maybe do a func to get command '/cmd'
+void Server::executeCmd(Client *clt, char *cmd)
 {
-    if (strncmp(cmd, "/quit ", 5) == 0)
-        std::cout << "quit test" << std::endl;
-    else if (strncmp(cmd, "/pass ", 5) == 0) 
+    std::string cmdValue = extractAfterCmd(cmd);
+    if (strncmp(cmd, "/join ", 6) == 0)
     {
-        clt->cmdPassword(cmd, getPassword());
+        Command::join(_channels, clt, cmdValue);
     }
-    else if (strncmp(cmd, "/username ", 9) == 0) 
+    else if (strncmp(cmd, "/kick ", 6) == 0)
     {
-        clt->cmdNick(cmd);
+        
     }
-    else if (strncmp(cmd, "/nick ", 5) == 0) 
+    else if (strncmp(cmd, "/invite ", 8) == 0)
     {
-        clt->cmdNick(cmd);
+
     }
+    else if (strncmp(cmd, "/mode ", 6) == 0)
+    {
+        
+    }
+}
+
+void Server::authProcess(Client *clt, char *cmd)
+{
+    std::string cmdValue = extractAfterCmd(cmd);
+    if (!clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
+        Command::password(clt, cmdValue, getPassword());
+    else if (!clt->getAuth())
+        error_print("Use '/pass [password]' to authenticate");
+    else if (clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
+        error_print("Already Authenticated!");
     else
     {
-        error_print("Command does not exist");
+        if (strncmp(cmd, "/nick ", 6) == 0)
+            Command::nick(clt, cmdValue);
+        else if (strncmp(cmd, "/username ", 10) == 0)
+            Command::username(clt, cmdValue);
+        else if (!clt->getNickDef() || !clt->getUserDef())
+            error_print("Define username and nickname! Use '/user [username]' and '/nick [nickname]' to define one");
+        else
+            executeCmd(clt, cmd);
     }
 }
 

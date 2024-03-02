@@ -18,7 +18,9 @@
 #include <netdb.h>
 #include <arpa/inet.h> 
 
+#include "commands.hpp"
 #include "client.hpp"
+#include "channel.hpp"
 #include "main.hpp"
 #include "sig_utils.hpp"
 
@@ -27,6 +29,7 @@
 #define FDS_SIZE 1024
 
 class Client;
+class Channel;
 
 class Server
 {
@@ -39,7 +42,7 @@ private:
     int _server_socket;
     int _server_listener;
     std::map<int, Client*> _clients;
-    //std::vector<pollfd> _pollfd;
+    std::map<std::string, Channel*> _channels;
 
 public:
     Server(int port, std::string password);
@@ -66,7 +69,8 @@ public:
     std::string const getPassword() const;
 
     //commands
-    void checkCmd(Client *clt, char *cmd);
+    void authProcess(Client *clt, char *cmd);
+    void executeCmd(Client *clt, char *cmd);
     
 };
 

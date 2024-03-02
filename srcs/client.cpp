@@ -9,38 +9,24 @@ Client::~Client() {}
 
 
 // regular cmds
-void Client::cmdPassword(std::string insertPassword, std::string serverPassword)
+void Client::authenticate()
 {
-    _password = insertPassword.substr(insertPassword.find_first_not_of(" ", 5));
-    if (_password.compare(serverPassword) == 0)
-        _auth = true;
-    else
-        error_print("Wrong Password");
-    std::cout << "Password Accepted - You been authenticated" << _password << std::endl;
+    _auth = true;
+    std::cout << "Password Accepted - You been authenticated" << std::endl;
 }
 
-void Client::cmdUsername(std::string username)
+void Client::setUsername(std::string username)
 {
-    if (_auth)
-    {
-        _username = username.substr(username.find_first_not_of(" ", 9));
-        _userDef = true;
-        std::cout << "Your username is now " << _username << std::endl;
-    }
-    else
-        error_print("Not Yet Authenticated - '/pass [password] to authenticate'");
+    _username = username;
+    _userDef = true;
+    std::cout << "Your username is now " << _username << std::endl;
 }
 
-void Client::cmdNick(std::string nick)
+void Client::setNick(std::string nick)
 {
-    if (_auth)
-    {
-        _nick = nick.substr(nick.find_first_not_of(" ", 5));
-        _nickDef = true;
-        std::cout << "Your nick is now " << _nick << std::endl;
-    }
-    else
-        error_print("Not Yet Authenticated - '/pass [password] to authenticate'");
+    _nick = nick;
+    _nickDef = true;
+    std::cout << "Your nick is now " << _nick << std::endl;
 }
 
 // void Client::cmdJoinChannel(std::string channel)
@@ -85,7 +71,6 @@ void Client::cmdNick(std::string nick)
 
 // }
 
-
 // getters
 bool Client::getAuth()
 {
@@ -100,4 +85,9 @@ bool Client::getUserDef()
 bool Client::getNickDef()
 {
     return _nickDef;
+}
+
+std::string Client::getNick()
+{
+    return _nick;
 }

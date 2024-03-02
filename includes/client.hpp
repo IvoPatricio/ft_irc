@@ -15,7 +15,6 @@ private:
     struct sockaddr_in _address;
     std::string _nick;
     std::string _username;
-    std::string _password;
     std::string _channel;
     std::string _sendPrivate;
     std::string _receivePrivate;
@@ -31,9 +30,9 @@ public:
     ~Client();
 
     // regular cmds
-    void cmdPassword(std::string password, std::string serverPassword);
-    void cmdNick(std::string nick);
-    void cmdUsername(std::string username);
+    void authenticate();
+    void setUsername(std::string username);
+    void setNick(std::string nick);
     void cmdJoinChannel(std::string channel);
     void cmdSendChannel(std::string channel);
     void cmdSendPrivate(std::string sendPrivate);
@@ -49,6 +48,7 @@ public:
     bool getAuth();
     bool getUserDef();
     bool getNickDef();
+    std::string getNick();
 };
 
 #endif
