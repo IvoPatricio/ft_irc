@@ -18,7 +18,9 @@ Server::~Server()
 
 void Server::checkCmd(Client *clt, char *cmd)
 {
-    if (strncmp(cmd, "/pass ", 5) == 0) 
+    if (strncmp(cmd, "/quit ", 5) == 0)
+        std::cout << "quit test" << std::endl;
+    else if (strncmp(cmd, "/pass ", 5) == 0) 
     {
         clt->cmdPassword(cmd, getPassword());
     }
@@ -47,6 +49,51 @@ void Server::ServerError(std::string error_str)
     isRunning == false;
 }
 
+// Add a new file descriptor to the poll set
+void Server::add_to_pfds(struct pollfd *pfds[], int client_fd, int *fd_count, int *fd_size)
+{
+    if (*fd_count == *fd_size) 
+    {
+        ServerError("Maximum clients reached");
+        exit(1);
+    }
+    (*pfds)[*fd_count].fd = client_fd;
+    (*pfds)[*fd_count].events = POLLIN; // ready-to-read
+    (*fd_count)++;
+}
+
+void Server::del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
+{
+    pfds[i] = pfds[*fd_count-1];
+
+    (*fd_count)--;
+}
+
+void Server::AddClients(int &fd_count, int &MAX_FDS)
+{
+    struct sockaddr_in clienteAddr;
+    socklen_t addrlen;
+    char remoteIP[INET_ADDRSTRLEN];
+    int client_fd = 0;
+    int client_id = 1;
+
+    // Handle new connection
+    addrlen = sizeof clienteAddr;
+    client_fd = accept(_server_listener, (struct sockaddr *)&clienteAddr, &addrlen);
+    if (client_fd == -1) 
+        error_print("Accept");
+    else
+    {
+        //ADD CLIENTS
+        Client *client = new Client(client_fd, clienteAddr);
+	    _clients[client_fd] = client;
+        add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
+        //IPv4 convertion
+        //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
+        printf("Server: New Client connection from %s client id: %d\n", remoteIP, fd_count);
+    }
+}
+
 //Creating the listener socket for the server
 int Server::ServerListenerSock(void)
 {
@@ -71,49 +118,13 @@ int Server::ServerListenerSock(void)
     return _server_socket;
 }
 
-// Add a new file descriptor to the poll set
-void Server::add_to_pfds(struct pollfd *pfds[], int client_fd, int *fd_count, int *fd_size)
+int Server::Check_if_buf_cmd(char *buf)
 {
-    if (*fd_count == *fd_size) 
+    if (strncmp(buf, "/", 1) == 0)
     {
-        ServerError("Maximum clients reached");
-        exit(1);
+        return 0;
     }
-    (*pfds)[*fd_count].fd = client_fd;
-    (*pfds)[*fd_count].events = POLLIN; // ready-to-read
-    (*fd_count)++;
-}
-
-void Server::del_from_pfds(struct pollfd pfds[], int i, int *fd_count)
-{
-    pfds[i] = pfds[*fd_count-1];
-
-    (*fd_count)--;
-}
-
-void Server::AddClients(int fd_count, int MAX_FDS)
-{
-    struct sockaddr_in clienteAddr;
-    socklen_t addrlen;
-    char remoteIP[INET_ADDRSTRLEN];
-    int client_fd = 0;
-    int client_id = 1;
-
-    // Handle new connection
-    addrlen = sizeof clienteAddr;
-    client_fd = accept(_server_listener, (struct sockaddr *)&clienteAddr, &addrlen);
-    if (client_fd == -1) 
-        error_print("Accept");
-    else
-    {
-        //ADD CLIENTS
-        Client *client = new Client(client_fd, clienteAddr);
-	    _clients[client_fd] = client;
-        add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
-        //IPv4 convertion
-        //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
-        printf("Server: New Client connection from %s client id: %d\n", remoteIP, fd_count);
-    }
+    return 1;
 }
 
 int Server::ServerStartUp()
@@ -148,24 +159,9 @@ int Server::ServerStartUp()
             // Check if someone's ready to read
             if (pfds[i].revents & POLLIN) 
             {
-
                 if (pfds[i].fd == _server_listener) 
                 {
-                    // Handle new connection
-                    addrlen = sizeof clienteAddr;
-                    client_fd = accept(_server_listener, (struct sockaddr *)&clienteAddr, &addrlen);
-                    if (client_fd == -1) 
-                        error_print("Accept");
-                    else
-                    {
-                        //ADD & CREATION CLIENTS
-                        Client *client = new Client(client_fd, clienteAddr);
-	                    _clients[client_fd] = client;
-                        add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
-                        //IPv4 convertion
-                        //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
-                        printf("SERVER: New Client connection from %s client id: %d\n", remoteIP, fd_count);
-                    }
+                    AddClients(fd_count, MAX_FDS);
                 }
                 else
                 {
@@ -188,16 +184,17 @@ int Server::ServerStartUp()
                             // Sending except to SERVER and CURRENT CLIENT_SERVER
                             if (dest_fd != _server_listener && dest_fd != sender_fd) 
                             {
-                                printf("BUFF Content before sending to client: %.*s\n", (int)nbytes, buf);
-                                if (strncmp(buf, "/quit ", 5) == 0)
+                                printf("BUFF Content before sending to client: %s", buf);
+                                //checkCmd(dest_fd, )
+                                if (Check_if_buf_cmd(buf) == 0)
                                 {
-                                    printf("quit\n");
-                                    memset(buf, 0, sizeof(buf));
+                                    checkCmd(_clients[dest_fd], buf);
                                 }
-                                if (send(dest_fd, buf, nbytes, 0) < 0) 
+                                else if (send(dest_fd, buf, nbytes, 0) < 0) 
                                 {
                                     error_print("Send failed");
                                 }
+                                memset(buf, '\0', sizeof(buf));
                             }
                         }
                     }

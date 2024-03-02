@@ -48,7 +48,7 @@ public:
     //Server startup
     int ServerStartUp();
     //Server Cliente Related
-    void AddClients(int fd_count, int MAX_FDS);
+    void AddClients(int &fd_count, int &MAX_FDS);
     //Server running
     void ServerIsRunning();
     int ServerListenerSock(void);
@@ -57,6 +57,7 @@ public:
 
     void ServerError(std::string error_str);
     void History();
+    int Check_if_buf_cmd(char *buf);
     //void ServerListenerSock();
     //void AddPollFd(int listener_socket);
 
