@@ -131,15 +131,7 @@ int Server::ServerStartUp()
 {
     char buf[BUFFER_SIZE];
     int MAX_FDS = FDS_SIZE;
-
     int fd_count = 1;
-
-    // For the client
-    struct sockaddr_in clienteAddr;
-    socklen_t addrlen;
-    char remoteIP[INET_ADDRSTRLEN];
-    int client_fd = 0;
-    int client_id = 1;
 
     // Set up the server and listen_socket
     _server_listener = ServerListenerSock();
