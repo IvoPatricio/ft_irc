@@ -173,19 +173,22 @@ int Server::ServerStartUp()
                         for(int j = 0; j < fd_count; j++) 
                         {
                             int dest_fd = pfds[j].fd;
+                            std::cout << "Testing: " << fd_count << std::endl;
                             // Sending except to SERVER and CURRENT CLIENT_SERVER
                             if (dest_fd != _server_listener && dest_fd != sender_fd) 
                             {
                                 printf("BUFF Content before sending to client: %s", buf);
-                                //checkCmd(dest_fd, )
                                 if (Check_if_buf_cmd(buf) == 0)
-                                {
                                     checkCmd(_clients[dest_fd], buf);
-                                }
                                 else if (send(dest_fd, buf, nbytes, 0) < 0) 
-                                {
                                     error_print("Send failed");
-                                }
+                                memset(buf, '\0', sizeof(buf));
+                            }
+                            //for server + 1 client
+                            else if (fd_count == 2)
+                            {
+                                if (Check_if_buf_cmd(buf) == 0)
+                                    checkCmd(_clients[dest_fd], buf);
                                 memset(buf, '\0', sizeof(buf));
                             }
                         }
