@@ -7,11 +7,12 @@
 class Client
 {
 private:
-    int         _clientNum;
+    int         _client_fd;
     bool        _admPerm;
     bool        _auth;
     bool        _userDef;
     bool        _nickDef;
+    struct sockaddr_in _address;
     std::string _nick;
     std::string _username;
     std::string _channel;
@@ -24,7 +25,8 @@ private:
     
 
 public:
-    Client(int clientNum);
+    Client(int client_fd, struct sockaddr_in address);
+    Client(int client_id);
     ~Client();
 
     // regular cmds
