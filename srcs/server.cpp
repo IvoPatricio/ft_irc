@@ -218,6 +218,7 @@ int Server::ServerStartUp()
                                 std::cout << "to the client_fd" << dest_fd << std::endl;
                                 if (Check_if_buf_cmd(buf) == 0)
                                     authProcess(_clients[sender_fd], buf);
+                                break ;
                             }
                         }
                     }
