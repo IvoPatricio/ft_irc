@@ -115,6 +115,7 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
         //ADD CLIENTS
         Client *client = new Client(client_fd, clienteAddr);
 	    _clients[client_fd] = client;
+        std::cout << "CLIENT_FD 1:" << client_fd << std::endl;
         add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
         //IPv4 convertion
         //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
@@ -197,27 +198,26 @@ int Server::ServerStartUp()
                     }
                     else 
                     {
+                        std::cout << "Sending data from the client_fd:" << sender_fd << std::endl;
                         // We got data from a client
                         for(int j = 0; j < fd_count; j++) 
                         {
                             int dest_fd = pfds[j].fd;
-                            std::cout << "Testing: " << fd_count << std::endl;
                             // Sending except to SERVER and CURRENT CLIENT_SERVER
                             if (dest_fd != _server_listener && dest_fd != sender_fd) 
                             {
-                                printf("BUFF Content before sending to client: %s", buf);
+                                std::cout << "to the client_fd" << dest_fd << std::endl;
                                 if (Check_if_buf_cmd(buf) == 0)
-                                    authProcess(_clients[dest_fd], buf);
+                                    authProcess(_clients[sender_fd], buf);
                                 else if (send(dest_fd, buf, nbytes, 0) < 0) 
                                     error_print("Send failed");
-                                memset(buf, '\0', sizeof(buf));
                             }
                             //for server + 1 client
                             else if (fd_count == 2)
                             {
+                                std::cout << "to the client_fd" << dest_fd << std::endl;
                                 if (Check_if_buf_cmd(buf) == 0)
-                                    authProcess(_clients[dest_fd], buf);
-                                memset(buf, '\0', sizeof(buf));
+                                    authProcess(_clients[sender_fd], buf);
                             }
                         }
                     }
