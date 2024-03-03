@@ -23,7 +23,7 @@
 #include "channel.hpp"
 #include "main.hpp"
 #include "sig_utils.hpp"
-
+#include "utils.hpp"
 
 #define BUFFER_SIZE 10000
 #define FDS_SIZE 1024
@@ -70,7 +70,7 @@ public:
 
     //commands
     void authProcess(Client *clt, char *cmd);
-    void executeCmd(Client *clt, char *cmd);
+    void executeCmd(Client *clt, std::string cmd, std::string cmdValue);
     
 };
 

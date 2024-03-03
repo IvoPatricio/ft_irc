@@ -26,7 +26,6 @@ private:
 
 public:
     Client(int client_fd, struct sockaddr_in address);
-    Client(int client_id);
     ~Client();
 
     // regular cmds
@@ -45,6 +44,7 @@ public:
     void cmdMode(std::string mode);
 
     //getters
+    int getCltFd();
     bool getAuth();
     bool getUserDef();
     bool getNickDef();

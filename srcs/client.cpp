@@ -1,11 +1,18 @@
 #include "../includes/client.hpp"
 
-Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd), _address(address), _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username("")
+Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd), _address(address),
+    _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username("")
 {
     std::cout << "Client created" << std::endl;
 }
 
 Client::~Client() {}
+
+
+int Client::getCltFd()
+{
+    return _client_fd;
+}
 
 
 // regular cmds
@@ -52,7 +59,7 @@ void Client::setNick(std::string nick)
 
 // // operator cmds
 // void Client::cmdKick(std::string kick)
-// {
+// {]
 
 // }
 

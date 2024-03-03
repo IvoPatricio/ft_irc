@@ -22,47 +22,60 @@ Server::~Server()
 }
 
 // TODO: change func to commands
-// maybe do a func to get command '/cmd'
-void Server::executeCmd(Client *clt, char *cmd)
+void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
-    std::string cmdValue = extractAfterCmd(cmd);
-    if (strncmp(cmd, "/join ", 6) == 0)
+    std::cout << "execute cmd" << std::endl;
+    if (cmd.compare("/pmsg") == 0)
+    {
+        Command::pMsg(_clients, clt, cmdValue);
+    }
+    else if (cmd.compare("/join") == 0)
     {
         Command::join(_channels, clt, cmdValue);
     }
-    else if (strncmp(cmd, "/kick ", 6) == 0)
+    else if (cmd.compare("/kick") == 0)
     {
         
     }
-    else if (strncmp(cmd, "/invite ", 8) == 0)
+    else if (cmd.compare("/invite") == 0)
     {
 
     }
-    else if (strncmp(cmd, "/mode ", 6) == 0)
+    else if (cmd.compare("/mode") == 0)
     {
         
+    }
+    else
+    {
+        error_print("Cmd does not exist");
     }
 }
 
-void Server::authProcess(Client *clt, char *cmd)
+void Server::authProcess(Client *clt, char *fullCmd)
 {
-    std::string cmdValue = extractAfterCmd(cmd);
-    if (!clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
+    std::string cmd = getCmd(fullCmd);
+    std::string cmdValue = getCmdValue(fullCmd);
+    if (cmdValue.empty())
+    {
+        error_print("No Arguments in cmd");
+        return ;
+    }
+    if (!clt->getAuth() && cmd.compare("/pass") == 0)
         Command::password(clt, cmdValue, getPassword());
     else if (!clt->getAuth())
         error_print("Use '/pass [password]' to authenticate");
-    else if (clt->getAuth() && strncmp(cmd, "/pass ", 6) == 0)
+    else if (clt->getAuth() && cmd.compare("/pass") == 0)
         error_print("Already Authenticated!");
     else
     {
-        if (strncmp(cmd, "/nick ", 6) == 0)
-            Command::nick(clt, cmdValue);
-        else if (strncmp(cmd, "/username ", 10) == 0)
+        if (cmd.compare("/user") == 0)
             Command::username(clt, cmdValue);
+        else if (cmd.compare("/nick") == 0)
+            Command::nick(clt, cmdValue);
         else if (!clt->getNickDef() || !clt->getUserDef())
             error_print("Define username and nickname! Use '/user [username]' and '/nick [nickname]' to define one");
         else
-            executeCmd(clt, cmd);
+            executeCmd(clt, cmd, cmdValue);
     }
 }
 
@@ -114,6 +127,7 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
     {
         //ADD CLIENTS
         Client *client = new Client(client_fd, clienteAddr);
+        std::cout << "add client fd -> " << client_fd << std::endl;
 	    _clients[client_fd] = client;
         std::cout << "CLIENT_FD 1:" << client_fd << std::endl;
         add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
@@ -221,6 +235,7 @@ int Server::ServerStartUp()
                                 break ;
                             }
                         }
+                        memset(buf, 0, sizeof(buf));
                     }
                 }
             }
