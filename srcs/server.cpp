@@ -60,6 +60,7 @@ void Server::authProcess(Client *clt, char *fullCmd)
     {
         std::cout << fullCmd[i];
     }
+    std::cout << "\n\n" << std::endl;
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
     std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
@@ -212,7 +213,6 @@ int Server::ServerStartUp()
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
                     buf[nbytes] = '\0';
                     int sender_fd = pfds[i].fd;
-                    // _senderFd = pfds[i].fd;
                     if (nbytes <= 0)
                     {
                         if (nbytes == 0) 
@@ -220,49 +220,16 @@ int Server::ServerStartUp()
                         close(pfds[i].fd); // CLOSE CLIENT
                         del_from_pfds(pfds, i, &fd_count);
                     }
-                    else 
+                    else
                     {
-                        std::cout << "Sending data from the client_fd:" << sender_fd << std::endl;
-                        // We got data from a client
-                        for(int j = 0; j < fd_count; j++) 
-                        {
-                            int dest_fd = pfds[j].fd;
-                            std::cout << "dest - " << dest_fd << " | server_list - " << _server_listener << " | sender_fd - "  << sender_fd << std::endl;
-                            // Sending except to SERVER and CURRENT CLIENT_SERVER
-                            if (dest_fd != _server_listener && dest_fd != sender_fd) 
-                            {
-                                std::cout << "to the client_fd" << dest_fd << std::endl;
-                                if (Check_if_buf_cmd(buf) == 0)
-                                    authProcess(_clients[sender_fd], buf);
-                                else if (send(dest_fd, buf, nbytes, 0) < 0) 
-                                    error_print("Send failed");
-                            }
-                            //for server + 1 client
-                            // else if (fd_count == 2)
-                            // {
-                            //     std::cout << "to the client_fd" << dest_fd << std::endl;
-                            //     if (Check_if_buf_cmd(buf) == 0)
-                            //         authProcess(_clients[sender_fd], buf);
-                            //     break ;
-                            // }
-                            else
-                            {
-                                // int size = 0;
-                                // while(buf[size] != '\0')
-                                //     size++;
-                                // for (int i = 0; i < size; i++)
-                                //     std::cout << buf[i];
-                                // if (Check_if_buf_cmd(buf) == 0)
-                                authProcess(_clients[sender_fd], buf);
-                            }
-                        }
-                        memset(buf, 0, sizeof(buf));
+                        std::cout << "Client " << sender_fd << std::endl;
+                        authProcess(_clients[sender_fd], buf);
                     }
+                    memset(buf, 0, sizeof(buf));
                 }
             }
         }
     }
-    
     return 0;
 }
 
