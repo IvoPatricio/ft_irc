@@ -2,6 +2,7 @@
 # define UTILS_HPP
 
 # include "main.hpp"
+# include <algorithm>
 
 std::string getCmdValue(char *fullCmd);
 std::string getCmd(char *fullCmd);

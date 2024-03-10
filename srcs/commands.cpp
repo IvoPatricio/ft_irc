@@ -5,16 +5,19 @@ Command::Command() {}
 
 Command::~Command() {}
 
-// usage -> /pass [password]
+// usage -> /PASS [password]
 void Command::password(Client *clt, std::string insertPassword, std::string svPassword)
 {
     if (insertPassword.compare(svPassword) == 0)
         clt->authenticate();
     else
+    {
+        
         error_print("Wrong Password");
+    }
 }
 
-// usage -> /user [username]
+// usage -> /USER [username]
 // username CANT change
 void Command::username(Client *clt, std::string username)
 {
@@ -36,7 +39,7 @@ void Command::username(Client *clt, std::string username)
     clt->setUsername(username);
 }
 
-// usage -> /nick [nick]
+// usage -> /NICK [nick]
 // nick CAN change
 void Command::nick(Client *clt, std::string nick)
 {
@@ -53,21 +56,32 @@ void Command::nick(Client *clt, std::string nick)
     clt->setNick(nick);
 }
 
-// /pmsg [user/nick] [msg]
-void Command::pMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
+int	sendIrcMessage(std::string message, int clientId)
+{
+	message = message + "\r\n";
+	std::cout << "Sending message: " << message << std::endl;
+	if (send(clientId, message.c_str(), message.length(), 0) == -1)
+		exit(error_print("Error sending message"));
+	return 0;
+}
+
+// /PRIVMSG [user/nick] [msg]
+void Command::privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
 {
     (void)cltSend;
     std::string msg[2];
     parseMsg(msg, cmd);
-    std::cout << std::endl << "Pmsg:" << std::endl;
-    std::cout << "Nick -> " << msg[0] << std::endl;
-    std::cout << "Msg -> " << msg[1] << std::endl;
+    // std::cout << std::endl << "Pmsg:" << std::endl;
+    // std::cout << "Nick -> " << msg[0] << std::endl;
+    // std::cout << "Msg -> " << msg[1] << std::endl;
     std::map<int, Client*>::iterator it;
     for (it = cltMap.begin(); it != cltMap.end(); ++it)
     {
         if (it->second->getNick().compare(msg[0]) == 0)
         {
             std::cout << "nick found!" <<std::endl;
+            if (!msg[1].empty())
+                sendIrcMessage(msg[1], it->second->getCltFd());
             //find clt
             //send msg
             return ;
@@ -76,9 +90,21 @@ void Command::pMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string c
     std::cout << "User nickname does not exist!" << std::endl; 
 }
 
-// usage -> /join [channeName]
+int	sendChannelMessage(std::string message, std::vector<Client*> clts)
+{
+	// message = message + "\r\n";
+    std::vector<Client*>::iterator it;
+    for (it = clts.begin(); it < clts.end(); ++it)
+    {
+        sendIrcMessage(message, (*it)->getCltFd());
+    }
+	return 0;
+}
+
+// usage -> /JOIN [channeName]
 void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName)
 {
+    
     if (!checkOneWord(channelName))
     {
         error_print("Channel name has to be one word!");
@@ -88,12 +114,14 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     {
         //channel exists
         channelMap[channelName]->addMember(clt);
-        std::cout << "You joined " << channelName << std::endl;
+        // std::cout << "You joined " << channelName << std::endl;
+        // sendChannelMessage("JOIN #" + channelName, channelMap[channelName]->getMemberList());
     }
     else
     {
         channelMap[channelName] = new Channel(channelName, clt);
-        std::cout << channelName << " channel created! " << std::endl;
+        // std::cout << "JOIN " << channelName << std::endl;
+        sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
     }
 }
 

@@ -44,11 +44,12 @@ public:
     void cmdMode(std::string mode);
 
     //getters
-    int getCltFd();
     bool getAuth();
     bool getUserDef();
     bool getNickDef();
+    std::string getUser();
     std::string getNick();
+    int getCltFd();
 };
 
 #endif

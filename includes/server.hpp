@@ -43,6 +43,7 @@ private:
 
     int _server_socket;
     int _server_listener;
+    int _senderFd;
 
 public:
     Server(int port, std::string password);

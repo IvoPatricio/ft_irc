@@ -4,16 +4,25 @@ std::string getCmdValue(char *fullCmd)
 {
     std::string cmd;
     int i = -1;
-    while (fullCmd[++i] == 32 || fullCmd[i] == 9)
+    while (fullCmd[++i] == 32 || fullCmd[i] == 9 || fullCmd[i] == 13)
         continue ;
-    while (fullCmd[i] != 32 && fullCmd[i] != '\n')
+    while (fullCmd[i] != 32 && fullCmd[i] != '\n' && fullCmd[i] != '\0')
         i++;
-    while (fullCmd[i] == 32 || fullCmd[i] == 9)
+    while (fullCmd[i] == 32 || fullCmd[i] == 9 || fullCmd[i] == 13)
         i++;
     if (fullCmd[i] == '\0')
         return "";
     while (fullCmd[i] != '\0' && fullCmd[i] != '\n')
+    {
+        if (fullCmd[i] == '\n' && fullCmd[i + 1] == '\0')
+            return cmd;
+        if (fullCmd[i] == 13)
+        {
+            i++;
+            continue ;
+        }
         cmd += fullCmd[i++];
+    }
     return cmd;
 }
 
@@ -27,12 +36,12 @@ std::string getCmd(char *fullCmd)
         return "";
     while (fullCmd[i] != '\0' && fullCmd[i] != 32 && fullCmd[i] != '\n')
         cmd += fullCmd[i++];
+    std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
     return cmd;
 }
 
 void parseMsg(std::string *msgArray, std::string fullMsg)
 {
-    // TODO: This logic is wrong. firstWordEnd is the beginning and not the end
     size_t firstWordBegin = fullMsg.find_first_not_of(" ");
     size_t firstWordEnd = fullMsg.find_first_of(" ", firstWordBegin);
     msgArray[0] = fullMsg.substr(firstWordBegin, firstWordEnd);

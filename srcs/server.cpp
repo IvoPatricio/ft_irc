@@ -25,23 +25,23 @@ Server::~Server()
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
     std::cout << "execute cmd" << std::endl;
-    if (cmd.compare("/pmsg") == 0)
+    if (cmd.compare("PRIVMSG") == 0)
     {
-        Command::pMsg(_clients, clt, cmdValue);
+        Command::privMsg(_clients, clt, cmdValue);
     }
-    else if (cmd.compare("/join") == 0)
+    else if (cmd.compare("JOIN") == 0)
     {
         Command::join(_channels, clt, cmdValue);
     }
-    else if (cmd.compare("/kick") == 0)
+    else if (cmd.compare("KICK") == 0)
     {
         
     }
-    else if (cmd.compare("/invite") == 0)
+    else if (cmd.compare("INVITE") == 0)
     {
 
     }
-    else if (cmd.compare("/mode") == 0)
+    else if (cmd.compare("MODE") == 0)
     {
         
     }
@@ -53,27 +53,35 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 
 void Server::authProcess(Client *clt, char *fullCmd)
 {
+    int size = 0;
+    while (fullCmd[size] != '\0')
+        size++;
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << fullCmd[i];
+    }
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
+    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
     if (cmdValue.empty())
     {
         error_print("No Arguments in cmd");
         return ;
     }
-    if (!clt->getAuth() && cmd.compare("/pass") == 0)
+    if (!clt->getAuth() && cmd.compare("PASS") == 0)
         Command::password(clt, cmdValue, getPassword());
     else if (!clt->getAuth())
-        error_print("Use '/pass [password]' to authenticate");
-    else if (clt->getAuth() && cmd.compare("/pass") == 0)
+        error_print("Use '/PASS [password]' to authenticate");
+    else if (clt->getAuth() && cmd.compare("/PASS") == 0)
         error_print("Already Authenticated!");
     else
     {
-        if (cmd.compare("/user") == 0)
+        if (cmd.compare("USER") == 0)
             Command::username(clt, cmdValue);
-        else if (cmd.compare("/nick") == 0)
+        else if (cmd.compare("NICK") == 0)
             Command::nick(clt, cmdValue);
         else if (!clt->getNickDef() || !clt->getUserDef())
-            error_print("Define username and nickname! Use '/user [username]' and '/nick [nickname]' to define one");
+            error_print("Define username and nickname! Use '/USER [username]' and '/NICK [nickname]' to define one");
         else
             executeCmd(clt, cmd, cmdValue);
     }
@@ -202,7 +210,9 @@ int Server::ServerStartUp()
                 {
                     // If not the _server_listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
+                    buf[nbytes] = '\0';
                     int sender_fd = pfds[i].fd;
+                    // _senderFd = pfds[i].fd;
                     if (nbytes <= 0)
                     {
                         if (nbytes == 0) 
@@ -217,6 +227,7 @@ int Server::ServerStartUp()
                         for(int j = 0; j < fd_count; j++) 
                         {
                             int dest_fd = pfds[j].fd;
+                            std::cout << "dest - " << dest_fd << " | server_list - " << _server_listener << " | sender_fd - "  << sender_fd << std::endl;
                             // Sending except to SERVER and CURRENT CLIENT_SERVER
                             if (dest_fd != _server_listener && dest_fd != sender_fd) 
                             {
@@ -227,12 +238,22 @@ int Server::ServerStartUp()
                                     error_print("Send failed");
                             }
                             //for server + 1 client
-                            else if (fd_count == 2)
+                            // else if (fd_count == 2)
+                            // {
+                            //     std::cout << "to the client_fd" << dest_fd << std::endl;
+                            //     if (Check_if_buf_cmd(buf) == 0)
+                            //         authProcess(_clients[sender_fd], buf);
+                            //     break ;
+                            // }
+                            else
                             {
-                                std::cout << "to the client_fd" << dest_fd << std::endl;
-                                if (Check_if_buf_cmd(buf) == 0)
-                                    authProcess(_clients[sender_fd], buf);
-                                break ;
+                                // int size = 0;
+                                // while(buf[size] != '\0')
+                                //     size++;
+                                // for (int i = 0; i < size; i++)
+                                //     std::cout << buf[i];
+                                // if (Check_if_buf_cmd(buf) == 0)
+                                authProcess(_clients[sender_fd], buf);
                             }
                         }
                         memset(buf, 0, sizeof(buf));

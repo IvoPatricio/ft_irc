@@ -27,4 +27,11 @@ re: 			fclean $(NAME)
 test:	all
 		./ircserv 8686 abc
 
+test2:	all
+		./ircserv 8585 123
+
+test3:	all
+		./ircserv 8484 YEY
+
+
 .PHONY: all clean fclean re test

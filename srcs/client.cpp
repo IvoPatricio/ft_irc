@@ -8,13 +8,6 @@ Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd
 
 Client::~Client() {}
 
-
-int Client::getCltFd()
-{
-    return _client_fd;
-}
-
-
 // regular cmds
 void Client::authenticate()
 {
@@ -97,4 +90,14 @@ bool Client::getNickDef()
 std::string Client::getNick()
 {
     return _nick;
+}
+
+std::string Client::getUser()
+{
+    return _username;
+}
+
+int Client::getCltFd()
+{
+    return _client_fd;
 }
