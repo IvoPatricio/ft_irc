@@ -39,6 +39,15 @@ void Command::username(Client *clt, std::string username)
     clt->setUsername(username);
 }
 
+int	sendIrcMessage(std::string message, int clientId)
+{
+	message = message + "\r\n";
+	std::cout << "Sending message: " << message << std::endl;
+	if (send(clientId, message.c_str(), message.length(), 0) == -1)
+		exit(error_print("Error sending message"));
+	return 0;
+}
+
 // usage -> /NICK [nick]
 // nick CAN change
 void Command::nick(Client *clt, std::string nick)
@@ -53,22 +62,14 @@ void Command::nick(Client *clt, std::string nick)
         error_print("Nick can't be more than one word!");
         return ;
     }
+    sendIrcMessage(":" + clt->getNick() + " NICK :" + nick, clt->getCltFd());
     clt->setNick(nick);
 }
 
-int	sendIrcMessage(std::string message, int clientId)
-{
-	message = message + "\r\n";
-	std::cout << "Sending message: " << message << std::endl;
-	if (send(clientId, message.c_str(), message.length(), 0) == -1)
-		exit(error_print("Error sending message"));
-	return 0;
-}
 
 // /PRIVMSG [user/nick] [msg]
 void Command::privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
 {
-    (void)cltSend;
     std::string msg[2];
     parseMsg(msg, cmd);
     // std::cout << std::endl << "Pmsg:" << std::endl;
@@ -81,7 +82,19 @@ void Command::privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::strin
         {
             std::cout << "nick found!" <<std::endl;
             if (!msg[1].empty())
-                sendIrcMessage(msg[1], it->second->getCltFd());
+            {
+                // sendIrcMessage(msg[1], it->second->getCltFd());
+                if (msg[1][0] != ':')
+                {
+                    sendIrcMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+                    sendIrcMessage(":" + msg[0] + " PRIVMSG " + cltSend->getNick() + " :" + msg[1], cltSend->getCltFd());
+                }
+                else
+                {
+                    msg[1].erase(msg[1].begin());
+                    sendIrcMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+                }
+            }
             //find clt
             //send msg
             return ;
