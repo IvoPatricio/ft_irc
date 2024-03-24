@@ -72,6 +72,8 @@ public:
     //commands
     void authProcess(Client *clt, char *cmd);
     void executeCmd(Client *clt, std::string cmd, std::string cmdValue);
+
+    void parseInitialMsg(Client *clt, char* buf);
     
 };
 

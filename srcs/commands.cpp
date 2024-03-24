@@ -105,6 +105,7 @@ int	sendChannelMessage(std::string message, std::vector<Client*> clts)
 void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName)
 {
     
+    // std::cout << "\ngetcltfd -> " << clt->getCltFd() << std::endl;
     if (!checkOneWord(channelName))
     {
         error_print("Channel name has to be one word!");
@@ -116,12 +117,13 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
         channelMap[channelName]->addMember(clt);
         // std::cout << "You joined " << channelName << std::endl;
         // sendChannelMessage("JOIN #" + channelName, channelMap[channelName]->getMemberList());
+        sendIrcMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, clt->getCltFd());
     }
     else
     {
         channelMap[channelName] = new Channel(channelName, clt);
         // std::cout << "JOIN " << channelName << std::endl;
-        sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
+        sendIrcMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, clt->getCltFd());
     }
 }
 

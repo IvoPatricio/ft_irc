@@ -13,10 +13,12 @@
 #define RED "\033[1m\033[31m"
 #define YELLOW "\033[33m"
 #define RESET "\033[0m"
+#define GREEN "\033[1;32m"
 
 
 int string_digit(std::string port);
 int string_chart(std::string pass);
 int error_print(std::string error_str);
+int success_print(std::string success_str);
 
 #endif

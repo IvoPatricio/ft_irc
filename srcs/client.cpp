@@ -12,21 +12,21 @@ Client::~Client() {}
 void Client::authenticate()
 {
     _auth = true;
-    std::cout << "Password Accepted - You been authenticated" << std::endl;
+    success_print("Password Accepted");
 }
 
 void Client::setUsername(std::string username)
 {
     _username = username;
     _userDef = true;
-    std::cout << "Your username is now " << _username << std::endl;
+    success_print("Your username is now " + _username);
 }
 
 void Client::setNick(std::string nick)
 {
     _nick = nick;
     _nickDef = true;
-    std::cout << "Your nick is now " << _nick << std::endl;
+    success_print("Your nick is now " + _nick);
 }
 
 // void Client::cmdJoinChannel(std::string channel)

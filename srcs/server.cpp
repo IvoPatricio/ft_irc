@@ -51,40 +51,75 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
 }
 
+void Server::parseInitialMsg(Client *clt, char* buf)
+{
+    char *newLine;
+    int i = 0;
+    while (buf[i] != '\n')
+        i++;
+    while (buf[i] != '\0')
+    {
+        // std::cout << "i -> " << i << std::endl;
+        newLine = buf + i;
+        while (buf[i] != '\n' && buf[i] != '\0')
+            i++;
+        newLine[i] = '\0';
+
+        std::cout << "NewLine -> " << newLine[0] << std::endl;
+
+        authProcess(clt, newLine);
+        i++;
+    }
+}
+
 void Server::authProcess(Client *clt, char *fullCmd)
 {
-    int size = 0;
-    while (fullCmd[size] != '\0')
-        size++;
-    for (int i = 0; i < size; i++)
-    {
-        std::cout << fullCmd[i];
-    }
+    // int size = 0;
+    // while (fullCmd[size] != '\0')
+    //     size++;
+    // for (int i = 0; i < size; i++)
+    // {
+    //     std::cout << fullCmd[i];
+    // }
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
     std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-    if (cmdValue.empty())
-    {
-        error_print("No Arguments in cmd");
-        return ;
-    }
-    if (!clt->getAuth() && cmd.compare("PASS") == 0)
+    // if (cmdValue.empty())
+    // {
+    //     error_print("No Arguments in cmd");
+    //     return ;
+    // }
+    if (cmd.compare("PASS") == 0)
         Command::password(clt, cmdValue, getPassword());
-    else if (!clt->getAuth())
-        error_print("Use '/PASS [password]' to authenticate");
-    else if (clt->getAuth() && cmd.compare("/PASS") == 0)
-        error_print("Already Authenticated!");
+    else if (cmd.compare("USER") == 0)
+        Command::username(clt, cmdValue);
+    else if (cmd.compare("NICK") == 0)
+        Command::nick(clt, cmdValue);
     else
     {
-        if (cmd.compare("USER") == 0)
-            Command::username(clt, cmdValue);
-        else if (cmd.compare("NICK") == 0)
-            Command::nick(clt, cmdValue);
-        else if (!clt->getNickDef() || !clt->getUserDef())
-            error_print("Define username and nickname! Use '/USER [username]' and '/NICK [nickname]' to define one");
-        else
+        if (clt->getAuth() && clt->getNickDef() && clt->getUserDef())
             executeCmd(clt, cmd, cmdValue);
+        else
+            error_print("Autenticate First! Use '/PASS [password]', '/USER [username]' and '/NICK [nickname]' to autenticate");
     }
+
+    // if (!clt->getAuth() && cmd.compare("PASS") == 0)
+    //     Command::password(clt, cmdValue, getPassword());
+    // else if (!clt->getAuth())
+    //     error_print("Use '/PASS [password]' to authenticate");
+    // else if (clt->getAuth() && cmd.compare("/PASS") == 0)
+    //     error_print("Already Authenticated!");
+    // else
+    // {
+    //     if (cmd.compare("USER") == 0)
+    //         Command::username(clt, cmdValue);
+    //     else if (cmd.compare("NICK") == 0)
+    //         Command::nick(clt, cmdValue);
+    //     else if (!clt->getNickDef() || !clt->getUserDef())
+    //         error_print("Define username and nickname! Use '/USER [username]' and '/NICK [nickname]' to define one");
+    //     else
+    //         executeCmd(clt, cmd, cmdValue);
+    // }
 }
 
 void Server::History()
@@ -137,7 +172,7 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
         Client *client = new Client(client_fd, clienteAddr);
         std::cout << "add client fd -> " << client_fd << std::endl;
 	    _clients[client_fd] = client;
-        std::cout << "CLIENT_FD 1:" << client_fd << std::endl;
+        // std::cout << "CLIENT_FD 1:" << client_fd << std::endl;
         add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
         //IPv4 convertion
         //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
@@ -224,38 +259,53 @@ int Server::ServerStartUp()
                     {
                         std::cout << "Sending data from the client_fd:" << sender_fd << std::endl;
                         // We got data from a client
-                        for(int j = 0; j < fd_count; j++) 
+                        // for(int j = 0; j < fd_count; j++) 
+                        // {
+                        // int dest_fd = pfds[j].fd;
+                        // std::cout << "dest - " << dest_fd << " | server_list - " << _server_listener << " | sender_fd - "  << sender_fd << std::endl;
+                        std::cout << "\n----> INITIAL MESSAGE <----" << std::endl;
+                        int size = 0;
+                        while (buf[size] != '\0')
+                            size++;
+                        for (int i = 0; i < size; i++)
                         {
-                            int dest_fd = pfds[j].fd;
-                            std::cout << "dest - " << dest_fd << " | server_list - " << _server_listener << " | sender_fd - "  << sender_fd << std::endl;
-                            // Sending except to SERVER and CURRENT CLIENT_SERVER
-                            if (dest_fd != _server_listener && dest_fd != sender_fd) 
-                            {
-                                std::cout << "to the client_fd" << dest_fd << std::endl;
-                                if (Check_if_buf_cmd(buf) == 0)
-                                    authProcess(_clients[sender_fd], buf);
-                                else if (send(dest_fd, buf, nbytes, 0) < 0) 
-                                    error_print("Send failed");
-                            }
-                            //for server + 1 client
-                            // else if (fd_count == 2)
-                            // {
-                            //     std::cout << "to the client_fd" << dest_fd << std::endl;
-                            //     if (Check_if_buf_cmd(buf) == 0)
-                            //         authProcess(_clients[sender_fd], buf);
-                            //     break ;
-                            // }
-                            else
-                            {
-                                // int size = 0;
-                                // while(buf[size] != '\0')
-                                //     size++;
-                                // for (int i = 0; i < size; i++)
-                                //     std::cout << buf[i];
-                                // if (Check_if_buf_cmd(buf) == 0)
-                                authProcess(_clients[sender_fd], buf);
-                            }
+                            std::cout << buf[i];
                         }
+                        std::cout << "----> END INITIAL MESSAGE <----\n" << std::endl;
+                        if (strncmp(buf, "CAP", 3) == 0)
+                            parseInitialMsg(_clients[sender_fd], buf);
+                        // else if (strncmp(buf, "CAP", 3) == 0 && dest_fd != 3)
+                        // {}
+                        else
+                            authProcess(_clients[sender_fd], buf);
+                            // Sending except to SERVER and CURRENT CLIENT_SERVER
+                            // if (dest_fd != _server_listener && dest_fd != sender_fd) 
+                            // {
+                            //     // std::cout << "to the client_fd" << dest_fd << std::endl;
+                            //     // if (Check_if_buf_cmd(buf) == 0)
+                            //     //     authProcess(_clients[sender_fd], buf);
+                            //     // else if (send(dest_fd, buf, nbytes, 0) < 0) 
+                            //     //     error_print("Send failed");
+                            // }
+                            // //for server + 1 client
+                            // // else if (fd_count == 2)
+                            // // {
+                            // //     std::cout << "to the client_fd" << dest_fd << std::endl;
+                            // //     if (Check_if_buf_cmd(buf) == 0)
+                            // //         authProcess(_clients[sender_fd], buf);
+                            // //     break ;
+                            // // }
+                            // else
+                            // {
+                            //     // int size = 0;
+                            //     // while(buf[size] != '\0')
+                            //     //     size++;
+                            //     // for (int i = 0; i < size; i++)
+                            //     //     std::cout << buf[i];
+                            //     // if (Check_if_buf_cmd(buf) == 0)
+                            //     authProcess(_clients[sender_fd], buf);
+                            // }
+                        // }
                         memset(buf, 0, sizeof(buf));
                     }
                 }

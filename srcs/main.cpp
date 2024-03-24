@@ -6,6 +6,12 @@ int error_print(std::string error_str)
     return 1;
 }
 
+int success_print(std::string success_str)
+{
+    std::cerr << GREEN << "SUCCESS - " << YELLOW << success_str << RESET << std::endl;
+    return 1;
+}
+
 int string_chart(std::string pass)
 {
     unsigned long i = 0;
