@@ -9,6 +9,7 @@ class Client
 private:
     int         _client_fd;
     struct sockaddr_in _address;
+    int         _firstAuth;
     bool        _admPerm;
     bool        _auth;
     bool        _userDef;
@@ -32,6 +33,7 @@ public:
     void authenticate();
     void setUsername(std::string username);
     void setNick(std::string nick);
+    void setFirstAuth(int firstAuth);
     void cmdJoinChannel(std::string channel);
     void cmdSendChannel(std::string channel);
     void cmdSendPrivate(std::string sendPrivate);
@@ -50,6 +52,7 @@ public:
     std::string getUser();
     std::string getNick();
     int getCltFd();
+    int getFirstAuth();
 };
 
 #endif

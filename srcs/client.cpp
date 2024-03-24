@@ -1,9 +1,10 @@
 #include "../includes/client.hpp"
 
 Client::Client(int client_fd, struct sockaddr_in address) : _client_fd(client_fd), _address(address),
-    _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username("")
+    _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username(""), _firstAuth(1)
 {
     std::cout << "Client created" << std::endl;
+    _firstAuth = 1;
 }
 
 Client::~Client() {}
@@ -27,6 +28,11 @@ void Client::setNick(std::string nick)
     _nick = nick;
     _nickDef = true;
     std::cout << "Your nick is now " << _nick << std::endl;
+}
+
+void Client::setFirstAuth(int firstauth)
+{
+    _firstAuth = firstauth;
 }
 
 // void Client::cmdJoinChannel(std::string channel)
@@ -72,6 +78,11 @@ void Client::setNick(std::string nick)
 // }
 
 // getters
+int Client::getFirstAuth()
+{
+    return _firstAuth;
+}
+
 bool Client::getAuth()
 {
     return _auth;

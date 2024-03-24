@@ -53,37 +53,62 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 
 void Server::authProcess(Client *clt, char *fullCmd)
 {
-    int size = 0;
-    while (fullCmd[size] != '\0')
-        size++;
-    for (int i = 0; i < size; i++)
+    if (clt->getFirstAuth() == 1)
     {
-        std::cout << fullCmd[i];
+        std::string user;
+        std::string nick;
+        char* CmdCopy = strdup(fullCmd);
+
+        if (CmdCopy == NULL) 
+        {
+            std::cerr << "Memory allocation failed." << std::endl;
+            return ;
+        }
+        char* token = std::strtok(CmdCopy, "\n");
+        while (token != NULL) 
+        {
+            char command[100];
+            char value[100];
+            sscanf(token, "%s %s", command, value);
+            std::string str(value);
+            if (strcmp(command, "USER") == 0)
+                user.assign(str);
+            else if (strcmp(command, "NICK") == 0)
+                nick.assign(str);
+            else if (!clt->getAuth() && strcmp(command, "PASS") == 0)
+                Command::password(clt, str, getPassword());
+            token = std::strtok(NULL, "\n");
+        }
+        Command::username(clt, user);
+        Command::nick(clt, nick);
+        free(CmdCopy);
+        clt->setFirstAuth(2);
     }
-    std::string cmd = getCmd(fullCmd);
-    std::string cmdValue = getCmdValue(fullCmd);
-    //std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-    if (cmdValue.empty())
-    {
-        error_print("No Arguments in cmd");
-        return ;
-    }
-    if (!clt->getAuth() && cmd.compare("PASS") == 0)
-        Command::password(clt, cmdValue, getPassword());
-    else if (!clt->getAuth())
-        error_print("Use '/PASS [password]' to authenticate");
-    else if (clt->getAuth() && cmd.compare("/PASS") == 0)
-        error_print("Already Authenticated!");
     else
     {
-        if (cmd.compare("USER") == 0)
-            Command::username(clt, cmdValue);
-        else if (cmd.compare("NICK") == 0)
-            Command::nick(clt, cmdValue);
-        else if (!clt->getNickDef() || !clt->getUserDef())
-            error_print("Define username and nickname! Use '/USER [username]' and '/NICK [nickname]' to define one");
+        std::string cmd = getCmd(fullCmd);
+        std::string cmdValue = getCmdValue(fullCmd);
+        std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
+        if (cmdValue.empty())
+        {
+            error_print("No Arguments in cmd");
+            return ;
+        }
+        if (!clt->getAuth() && cmd.compare("PASS") == 0)
+            Command::password(clt, cmdValue, getPassword());
+        else if (!clt->getAuth())
+            error_print("Use '/PASS [password]' to authenticate");
+        else if (clt->getAuth() && cmd.compare("/PASS") == 0)
+            error_print("Already Authenticated!");
         else
-            executeCmd(clt, cmd, cmdValue);
+        {
+            if (cmd.compare("USER") == 0)
+                Command::username(clt, cmdValue);
+            else if (cmd.compare("NICK") == 0)
+                Command::nick(clt, cmdValue);
+            else
+                executeCmd(clt, cmd, cmdValue);
+        }
     }
 }
 

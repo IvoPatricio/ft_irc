@@ -12,7 +12,6 @@ void Command::password(Client *clt, std::string insertPassword, std::string svPa
         clt->authenticate();
     else
     {
-        
         error_print("Wrong Password");
     }
 }
