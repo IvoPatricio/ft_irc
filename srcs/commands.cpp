@@ -39,6 +39,15 @@ void Command::username(Client *clt, std::string username)
     clt->setUsername(username);
 }
 
+int	sendIrcMessage(std::string message, int clientId)
+{
+	message = message + "\r\n";
+	std::cout << "Sending message: " << message << std::endl;
+	if (send(clientId, message.c_str(), message.length(), 0) == -1)
+		exit(error_print("Error sending message"));
+	return 0;
+}
+
 // usage -> /NICK [nick]
 // nick CAN change
 void Command::nick(Client *clt, std::string nick)
@@ -53,16 +62,8 @@ void Command::nick(Client *clt, std::string nick)
         error_print("Nick can't be more than one word!");
         return ;
     }
+    sendIrcMessage(":" + clt->getNick() + " NICK :" + nick, clt->getCltFd());
     clt->setNick(nick);
-}
-
-int	sendIrcMessage(std::string message, int clientId)
-{
-	message = message + "\r\n";
-	std::cout << "Sending message: " << message << std::endl;
-	if (send(clientId, message.c_str(), message.length(), 0) == -1)
-		exit(error_print("Error sending message"));
-	return 0;
 }
 
 // /PRIVMSG [user/nick] [msg]

@@ -43,7 +43,7 @@ private:
 
     int _server_socket;
     int _server_listener;
-    int _senderFd;
+    int _sender_fd;
 
 public:
     Server(int port, std::string password);
@@ -54,7 +54,6 @@ public:
     //Server Cliente Related
     void AddClients(int &fd_count, int &MAX_FDS);
     //Server running
-    void ServerIsRunning();
     int ServerListenerSock(void);
     void add_to_pfds(struct pollfd *pfds[], int client_fd, int *fd_count, int *fd_size);
     void del_from_pfds(struct pollfd pfds[], int i, int *fd_count);

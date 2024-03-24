@@ -6,6 +6,9 @@ Channel::Channel(std::string channelName, Client *clt)
 {
     _memberList.push_back(clt);
     _operatorList.push_back(clt);
+    _inviteMode = false;
+    _topicMode = false;
+    _passwordMode = false;
 }
 
 Channel::~Channel()

@@ -60,10 +60,9 @@ void Server::authProcess(Client *clt, char *fullCmd)
     {
         std::cout << fullCmd[i];
     }
-    std::cout << "\n\n" << std::endl;
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
-    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
+    //std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
     if (cmdValue.empty())
     {
         error_print("No Arguments in cmd");
@@ -86,11 +85,6 @@ void Server::authProcess(Client *clt, char *fullCmd)
         else
             executeCmd(clt, cmd, cmdValue);
     }
-}
-
-void Server::History()
-{
-    //SERVER CHAT HISTORY
 }
 
 void Server::ServerError(std::string error_str)
@@ -125,7 +119,6 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
     socklen_t addrlen;
     char remoteIP[INET_ADDRSTRLEN];
     int client_fd = 0;
-    // int client_id = 1;
 
     // Handle new connection
     addrlen = sizeof clienteAddr;
@@ -140,8 +133,7 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
 	    _clients[client_fd] = client;
         std::cout << "CLIENT_FD 1:" << client_fd << std::endl;
         add_to_pfds(&pfds, client_fd, &fd_count, &MAX_FDS);
-        //IPv4 convertion
-        //inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
+        inet_ntop(AF_INET, &(clienteAddr.sin_addr), remoteIP, INET_ADDRSTRLEN);
         printf("Server: New Client connection from %s client id: %d\n", remoteIP, fd_count);
     }
 }
@@ -149,8 +141,6 @@ void Server::AddClients(int &fd_count, int &MAX_FDS)
 //Creating the listener socket for the server
 int Server::ServerListenerSock(void)
 {
-    int _server_socket;
-
     struct sockaddr_in server_address;
      _server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_server_socket < 0)
@@ -191,7 +181,7 @@ int Server::ServerStartUp()
     pfds[0].fd = _server_listener;
     pfds[0].events = POLLIN; // Report ready to read on incoming connection
 
-    ServerIsRunning();
+    std::cout << YELLOW << "Server is running on the port: " << RESET << getPort() << std::endl;
     while (isRunning == true)
     {
         int poll_count = poll(pfds, fd_count, -1);
@@ -212,18 +202,18 @@ int Server::ServerStartUp()
                     // If not the _server_listener, we're just a regular client
                     int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
                     buf[nbytes] = '\0';
-                    int sender_fd = pfds[i].fd;
+                    _sender_fd = pfds[i].fd;
                     if (nbytes <= 0)
                     {
                         if (nbytes == 0) 
-                            printf("SERVER: socket %d hung up\n", sender_fd);
+                            printf("SERVER: socket %d hung up\n", _sender_fd);
                         close(pfds[i].fd); // CLOSE CLIENT
                         del_from_pfds(pfds, i, &fd_count);
                     }
                     else
                     {
-                        std::cout << "Client " << sender_fd << std::endl;
-                        authProcess(_clients[sender_fd], buf);
+                        std::cout << "Client " << _sender_fd << ": sending cmd" << std::endl;
+                        authProcess(_clients[_sender_fd], buf);
                     }
                     memset(buf, 0, sizeof(buf));
                 }
@@ -231,12 +221,6 @@ int Server::ServerStartUp()
         }
     }
     return 0;
-}
-
-void Server::ServerIsRunning()
-{
-    std::cout << YELLOW << "Server Port: " << RESET << getPort() << std::endl;
-    std::cout << YELLOW << "Server Password: " << RESET << getPassword() << std::endl;
 }
 
 int Server::getPort() const
