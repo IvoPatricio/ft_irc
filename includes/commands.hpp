@@ -4,9 +4,11 @@
 #include "main.hpp"
 #include "client.hpp"
 #include "channel.hpp"
+#include "server.hpp"
 
 class Channel;
 class Client;
+class Server;
 
 class Command
 {
@@ -21,6 +23,7 @@ public:
     static void nick(Client *clt, std::string nick);
     static void privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd);
     static void join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
+    static void quit(Client *clt, int fd);
     
     // operator cmds
     // TODO: check args needed

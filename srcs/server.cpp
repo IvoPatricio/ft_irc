@@ -11,11 +11,13 @@ Server::~Server()
     for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
         delete itClt->second;
+        _clients.erase(itClt);
     }
     std::map<std::string, Channel*>::iterator itChannel;
     for (itChannel = _channels.begin(); itChannel != _channels.end(); ++itChannel)
     {
         delete itChannel->second;
+        _channels.erase(itChannel);
     }
     close(_server_socket);
     std::cout << "Server shutting down" << std::endl;
@@ -59,12 +61,29 @@ void Server::ServerListenerSock(void)
     pollfds.push_back((pollfd){_server_socket, POLLIN, 0});
 }
 
+void Server::nickChecker(Client *clt, std::string nick)
+{
+    std::map<int, Client*>::iterator itClt;
+    for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
+    {
+        Client* client = itClt->second;
+        if (nick == client->getNick() && _clients.size() > 1)
+        {
+            std::cout << "NICK IS THE SAME" << std::endl;
+            Command::quit(clt, clt->getCltFd());
+        }
+    }
+    std::cout << "NICK IS NOT THE SAME" << std::endl;
+}
+
 // TODO: change func to commands
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
     if (cmd.compare("QUIT") == 0)
-        Command::quit(_clients, clt, cmdValue);
+    {
+        Command::quit(clt, clt->getCltFd());
+    }
     else if (cmd.compare("PRIVMSG") == 0)
     {
         Command::privMsg(_clients, clt, cmdValue);
@@ -123,7 +142,10 @@ void Server::authProcess(Client *clt, int fd, char *fullCmd)
     if (cmd.compare("USER") == 0)
         Command::username(clt, cmdValue);
     else if (cmd.compare("NICK") == 0)
+    {
+        nickChecker(clt, cmdValue);
         Command::nick(clt, cmdValue);
+    }
     else
         executeCmd(clt, cmd, cmdValue);
 }
@@ -203,12 +225,8 @@ int Server::ServerStartUp()
 	            		std::cerr << "Buffer Error" << std::endl;
 	            	}
 	            }
-                std::cout << buf << "----------" << std::endl;
                 if (strncmp(buf, "CAP", 3) == 0)
-                {
-                    std::cout << "ENTROU\n" << std::endl;
                     parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
-                }
                 else
                 {
                     std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;

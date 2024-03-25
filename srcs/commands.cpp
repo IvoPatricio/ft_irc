@@ -125,7 +125,31 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
 }
 
-Command::quit(_clients, clt, cmdValue);
+void Command::quit(Client *clt, int fd)
+{
+    close(fd);
+    /*std::map<int, Client*>::iterator it = _clients.find(fd);
+    if (it != _clients.end()) 
+    {
+        delete it->second; // Delete the client object
+        _clients.erase(it); // Remove the client from the map
+    }
+    else 
+    {
+        std::cerr << "Client not found in _clients map." << std::endl;
+    }
+
+    // Remove the associated pollfd from pollfds vector
+    std::vector<pollfd>::iterator pollIt = std::find_if(pollfds.begin(), pollfds.end(), [fd](const pollfd& pfd) {
+        return pfd.fd == fd;
+    });
+    if (pollIt != pollfds.end()) {
+        pollfds.erase(pollIt);
+    }
+    else {
+        std::cerr << "Associated pollfd not found in pollfds vector." << std::endl;
+    }*/
+}
 // void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
 
