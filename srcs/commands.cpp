@@ -198,10 +198,49 @@ void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, C
         cltMap.erase(it);
     }
 }
-// void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
-// {
 
-// }
+void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
+{
+    std::cout << "Kicking" << std::endl;
+    size_t Pos1 = user.find(' ');
+    size_t Pos2 = user.find(':');
+
+    std::string channelName = user.substr(Pos1 + 1, Pos2 - Pos1 - 2);
+    std::string remaining = user.substr(Pos2 + 1);
+
+    std::cout << "Channel Name: " << channelName << std::endl;
+    std::cout << "Remaining: " << remaining << std::endl;
+
+    std::map<std::string, Channel*>::iterator it;
+    std::cout << "\n\n" << remaining << std::endl;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        //Checking channel name
+        if (it->second->getChannelName() == channelName)
+        {
+            std::vector<Client*> operatorList = it->second->getOperatorList();
+            std::cout << "Operator List:" << std::endl;
+            //checking the operators channel list
+            for (size_t i = 0; i < operatorList.size(); ++i)
+            {
+                std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
+                if (operatorList[i]->getNick() == clt->getNick())
+                {
+                    std::cout << clt->getNick() << " is an operator" << std::endl;
+                    std::vector<Client*> memberList = it->second->getMemberList();
+                    //checking the members channel list
+                    for (size_t i = 0; i < memberList.size(); ++i)
+                    {
+                        std::cout << "|MEMBER|" << memberList[i]->getNick() << remaining << "|MEMBER|" << std::endl;
+                        if (memberList[i]->getNick() == remaining)
+                            std::cout << remaining << " is a member channel" << std::endl;
+                    }
+                }
+            }
+        }
+    }
+    error_print("Invalid channel");
+}
 
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {

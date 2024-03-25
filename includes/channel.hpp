@@ -27,6 +27,7 @@ public:
     // getters
     std::vector<Client*> &getMemberList();
     std::vector<Client*> &getOperatorList();
+    std::string getChannelName();
 
 };
 

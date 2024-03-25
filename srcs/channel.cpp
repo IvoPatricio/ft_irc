@@ -53,3 +53,8 @@ std::vector<Client*>& Channel::getOperatorList()
 {
     return _operatorList;
 }
+
+std::string Channel::getChannelName()
+{
+    return _channelName;
+}
