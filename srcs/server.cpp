@@ -63,17 +63,16 @@ void Server::ServerListenerSock(void)
 
 void Server::nickChecker(Client *clt, std::string nick)
 {
-    /*std::map<int, Client*>::iterator itClt;
+    std::map<int, Client*>::iterator itClt;
     for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
-        Client* client = itClt->second;
-        if (nick == client->getNick() && _clients.size() > 1)
+        if (nick == clt->getNick() && _clients.size() > 1)
         {
             std::cout << "NICK IS THE SAME" << std::endl;
             Command::quit(_clients, pollfds, clt, clt->getCltFd());
         }
     }
-    std::cout << "NICK IS NOT THE SAME" << std::endl;*/
+    std::cout << "NICK IS NOT THE SAME" << std::endl;
 }
 
 // TODO: change func to commands
@@ -154,6 +153,7 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
 {
     std::istringstream bufferStream(fullCmd);
     std::string line;
+    //std::cout << "\n\n------" << bufferStream << "\n\n-----------" << std::endl;
     while (std::getline(bufferStream, line)) 
     {
         size_t pos1 = line.find("PASS ");
@@ -163,12 +163,15 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
             password1.erase(password1.size() - 1);
             if (getPassword() != password1)
             {
+                error_print("PASSWORD");
                 std::cout << "Client_" << fd << ": auth failed" << std::endl;
                 close(fd);
                 return ;
             }
             else
-                Command::password(clt, password1, getPassword());
+            {
+                success_print("PASSWORD");
+            }
         }
         size_t pos2 = line.find("NICK ");
         if (pos2 != std::string::npos) 
@@ -180,7 +183,7 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
             delete[] nickBuffer;
         }
         size_t pos3 = line.find(" 0 * :realname");
-        if (pos3 != std::string::npos) 
+        if (pos3 != std::string::npos)
         {
             std::string user1 = line.substr(0, pos3);
             char* userBuffer = new char[user1.length() + 1];
@@ -216,15 +219,11 @@ int Server::ServerStartUp()
 					AddClients();
 					break ;
 				}
-                recv(pollfds[i].fd, buf, sizeof buf, 0);
-                while (!std::strstr(buf, "\r\n"))
+	            if(recv(pollfds[i].fd, buf, BUFFER_SIZE, 0) == -1)
 	            {
-	            	memset(buf, 0, BUFFER_SIZE);
-	            	if(recv(pollfds[i].fd, buf, BUFFER_SIZE, 0) == -1)
-	            	{
-	            		std::cerr << "Buffer Error" << std::endl;
-	            	}
+	            	std::cerr << "Buffer Error" << std::endl;
 	            }
+                std::cout << "\nBuffer:" << buf << "\n" << std::endl;
                 if (strncmp(buf, "CAP", 3) == 0)
                     parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
                 else

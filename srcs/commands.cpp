@@ -129,31 +129,26 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
 
 void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
 {
+    std::vector<pollfd>::iterator vecit;
+
+
+    /*for (vecit = pollfds.begin(); vecit != pollfds.end(); ++vecit)
+    {
+        std::cout << "\nVEC:"<< vecit->fd << std::endl;
+        if (vecit->fd == fd && vecit->fd != 3)
+        {
+            std::cout << "\nVEC:"<< vecit->fd << std::endl;
+            close(fd);
+            pollfds.erase(vecit);
+        }
+    }*/
     close(fd);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
     if (it != cltMap.end()) 
     {
-        delete it->second; // Delete the client object
-        cltMap.erase(it); // Remove the client from the map
+        delete it->second;
+        cltMap.erase(it);
     }
-    else 
-    {
-        std::cerr << "Client not found in _clients map." << std::endl;
-    }
-
-    // Remove the associated pollfd from pollfds vector
-    /*std::vector<pollfd>::iterator pollIt = std::find_if(pollfds.begin(), pollfds.end(), [=](const pollfd& pfd) 
-    {
-        return pfd.fd == fd;
-    });
-    if (pollIt != pollfds.end()) 
-    {
-        pollfds.erase(pollIt);
-    }
-    else
-    {
-        std::cerr << "Associated pollfd not found in pollfds vector." << std::endl;
-    }*/
 }
 // void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
