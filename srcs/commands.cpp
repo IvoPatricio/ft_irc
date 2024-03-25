@@ -125,7 +125,7 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
 }
 
-
+Command::quit(_clients, clt, cmdValue);
 // void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
 

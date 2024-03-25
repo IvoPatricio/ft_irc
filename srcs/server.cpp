@@ -62,8 +62,10 @@ void Server::ServerListenerSock(void)
 // TODO: change func to commands
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
-    std::cout << "execute cmd" << std::endl;
-    if (cmd.compare("PRIVMSG") == 0)
+    std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
+    if (cmd.compare("QUIT") == 0)
+        Command::quit(_clients, clt, cmdValue);
+    else if (cmd.compare("PRIVMSG") == 0)
     {
         Command::privMsg(_clients, clt, cmdValue);
     }
@@ -73,7 +75,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("KICK") == 0)
     {
-        
+
     }
     else if (cmd.compare("INVITE") == 0)
     {
@@ -81,7 +83,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("MODE") == 0)
     {
-        
+
     }
     else
     {
@@ -132,10 +134,10 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
     std::string line;
     while (std::getline(bufferStream, line)) 
     {
-        size_t pos = line.find("PASS ");
-        if (pos != std::string::npos) 
+        size_t pos1 = line.find("PASS ");
+        if (pos1 != std::string::npos) 
         {
-            std::string password1 = line.substr(pos + 5);
+            std::string password1 = line.substr(pos1 + 5);
             password1.erase(password1.size() - 1);
             if (getPassword() != password1)
             {
@@ -143,20 +145,22 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
                 close(fd);
                 return ;
             }
+            else
+                Command::password(clt, password1, getPassword());
         }
-        pos = line.find("NICK ");
-        if (pos != std::string::npos) 
+        size_t pos2 = line.find("NICK ");
+        if (pos2 != std::string::npos) 
         {
-            std::string nick1 = line.substr(pos);
+            std::string nick1 = line.substr(pos2);
             char* nickBuffer = new char[nick1.length() + 1];
             std::strcpy(nickBuffer, nick1.c_str());
             authProcess(_clients[fd], fd, nickBuffer);
             delete[] nickBuffer;
         }
-        pos = line.find("USER ");
-        if (pos != std::string::npos) 
+        size_t pos3 = line.find(" 0 * :realname");
+        if (pos3 != std::string::npos) 
         {
-            std::string user1 = line.substr(pos);
+            std::string user1 = line.substr(0, pos3);
             char* userBuffer = new char[user1.length() + 1];
             std::strcpy(userBuffer, user1.c_str());
             authProcess(_clients[fd], fd, userBuffer);
@@ -200,14 +204,16 @@ int Server::ServerStartUp()
 	            	}
 	            }
                 std::cout << buf << "----------" << std::endl;
-				std::cout << "EXECUTE CMD" << std::endl;
                 if (strncmp(buf, "CAP", 3) == 0)
                 {
                     std::cout << "ENTROU\n" << std::endl;
                     parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
                 }
                 else
+                {
+                    std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
                     authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                }
 			}
 		}
 	}
