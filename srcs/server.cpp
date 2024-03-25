@@ -85,7 +85,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("PRIVMSG") == 0)
     {
-        Command::privMsg(_clients, clt, cmdValue);
+        Command::privMsg(_channels, _clients, clt, cmdValue);
     }
     else if (cmd.compare("JOIN") == 0)
     {
@@ -224,7 +224,7 @@ int Server::ServerStartUp()
 	            	std::cerr << "Buffer Error" << std::endl;
 	            }
                 std::cout << "\nBuffer:" << buf << "\n" << std::endl;
-                if (strncmp(buf, "CAP", 3) == 0)
+                if (strncmp(buf, "CAP", 3) == 0 && pollfds[i].fd != 3)
                     parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
                 else
                 {

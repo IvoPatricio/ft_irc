@@ -21,7 +21,7 @@ public:
     static void password(Client *clt, std::string insertPassword, std::string svPassword);
     static void username(Client *clt, std::string username);
     static void nick(Client *clt, std::string nick);
-    static void privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd);
+    static void privMsg(std::map<std::string, Channel*> channelMap,std::map<int, Client*> cltMap, Client *cltSend, std::string cmd);
     static void join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
     static void quit(std::map<int, Client*> cltMap, std::vector<pollfd>	pollfds, Client *clt, int fd);
     

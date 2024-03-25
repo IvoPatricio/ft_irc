@@ -5,6 +5,38 @@ Command::Command() {}
 
 Command::~Command() {}
 
+int	sendIrcMessage(std::string message, int clientId)
+{
+	message = message + "\r\n";
+	std::cout << "Sending message to clt id " << clientId << " : " << message << std::endl;
+	if (send(clientId, message.c_str(), message.length(), 0) == -1)
+		exit(error_print("Error sending message"));
+    message.clear();
+	return 0;
+}
+
+int	sendChannelMessage(std::string message, std::vector<Client*> clts)
+{
+    std::vector<Client*>::iterator it;
+    for (it = clts.begin(); it < clts.end(); ++it)
+    {
+        sendIrcMessage(message, (*it)->getCltFd());
+    }
+	return 0;
+}
+
+void sendChannelToUser(Client *clt, std::string channelName, std::vector<Client*> clts)
+{
+    std::vector<Client*>::iterator it;
+    for (it = clts.begin(); it < clts.end(); ++it)
+    {
+        // sendIrcMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, (*it)->getCltFd());
+        sendIrcMessage(":" + (*it)->getNick() + "!" + (*it)->getUser() + "@localhost" + " JOIN " + channelName, clt->getCltFd());
+        // sendIrcMessage(":" + (*it)->getNick() + " JOIN " + channelName, clt->getCltFd());
+    }
+}
+
+
 // usage -> /PASS [password]
 void Command::password(Client *clt, std::string insertPassword, std::string svPassword)
 {
@@ -38,16 +70,6 @@ void Command::username(Client *clt, std::string username)
     clt->setUsername(username);
 }
 
-int	sendIrcMessage(std::string message, int clientId)
-{
-	message = message + "\r\n";
-	std::cout << "Sending message: " << message << std::endl;
-	if (send(clientId, message.c_str(), message.length(), 0) == -1)
-		exit(error_print("Error sending message"));
-    message.clear();
-	return 0;
-}
-
 // usage -> /NICK [nick]
 // nick CAN change
 void Command::nick(Client *clt, std::string nick)
@@ -67,8 +89,18 @@ void Command::nick(Client *clt, std::string nick)
     clt->setNick(nick);
 }
 
+void sendToAllInChannel(Client *cltSend, std::vector<Client*> clts, std::string msg, std::string channelName)
+{
+    std::vector<Client*>::iterator it;
+    for (it = clts.begin(); it < clts.end(); ++it)
+    {
+        if ((*it)->getCltFd() != cltSend->getCltFd())
+            sendIrcMessage(":" + cltSend->getNick() + "!@localhost PRIVMSG " + channelName + " :" + msg, (*it)->getCltFd());
+    }
+}
+
 // /PRIVMSG [user/nick] [msg]
-void Command::privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
+void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
 {
     (void)cltSend;
     std::string msg[2];
@@ -76,31 +108,43 @@ void Command::privMsg(std::map<int, Client*> cltMap, Client *cltSend, std::strin
     // std::cout << std::endl << "Pmsg:" << std::endl;
     // std::cout << "Nick -> " << msg[0] << std::endl;
     // std::cout << "Msg -> " << msg[1] << std::endl;
+    if (msg[0][0] == '#')
+    {
+        if (channelMap.find(msg[0]) != channelMap.end())
+        {
+            //channel exists
+            // sendIrcMessage("PRIVMSG " + msg[0], ->getCltFd());
+    
+            sendToAllInChannel(cltSend, channelMap[msg[0]]->getMemberList(), msg[1], msg[0]);
+            // sendChannelMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+        }
+        else
+        {
+            // does not exist
+        }
+    }
     std::map<int, Client*>::iterator it;
     for (it = cltMap.begin(); it != cltMap.end(); ++it)
     {
         if (it->second->getNick().compare(msg[0]) == 0)
         {
-            std::cout << "nick found!" <<std::endl;
             if (!msg[1].empty())
-                sendIrcMessage(msg[1], it->second->getCltFd());
-            //find clt
-            //send msg
-            return ;
+            {
+                // sendIrcMessage(msg[1], it->second->getCltFd());
+                if (msg[1][0] != ':')
+                {
+                    sendIrcMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+                    sendIrcMessage(":" + msg[0] + " PRIVMSG " + cltSend->getNick() + " :" + msg[1], cltSend->getCltFd());
+                }
+                else
+                {
+                    msg[1].erase(msg[1].begin());
+                    sendIrcMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+                }
+            }
         }
     }
     std::cout << "User nickname does not exist!" << std::endl; 
-}
-
-int	sendChannelMessage(std::string message, std::vector<Client*> clts)
-{
-	// message = message + "\r\n";
-    std::vector<Client*>::iterator it;
-    for (it = clts.begin(); it < clts.end(); ++it)
-    {
-        sendIrcMessage(message, (*it)->getCltFd());
-    }
-	return 0;
 }
 
 // usage -> /JOIN [channeName]
@@ -118,12 +162,16 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
         channelMap[channelName]->addMember(clt);
         // std::cout << "You joined " << channelName << std::endl;
         // sendChannelMessage("JOIN #" + channelName, channelMap[channelName]->getMemberList());
+        sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
+        // sendIrcMessage("NAMES " + channelName, clt->getCltFd());
+        // sendChannelToUser(clt, channelName, channelMap[channelName]->getMemberList());
     }
     else
     {
         channelMap[channelName] = new Channel(channelName, clt);
         // std::cout << "JOIN " << channelName << std::endl;
         sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
+        // sendIrcMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, clt->getCltFd());
     }
 }
 

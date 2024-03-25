@@ -20,7 +20,7 @@ void Channel::addMember(Client *clt)
 {
     for (size_t i = 0; i < _memberList.size(); i++)
     {
-        if (_memberList[i] == clt)
+        if (_memberList[i]->getCltFd() == clt->getCltFd())
         {
             error_print("You are already in this channel!");
             return ;
