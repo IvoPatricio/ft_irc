@@ -26,7 +26,7 @@ private:
     
 
 public:
-    Client(int client_fd, struct sockaddr_in address);
+    Client(int client_fd);
     ~Client();
 
     // regular cmds
