@@ -18,6 +18,7 @@
 #include <netdb.h>
 #include <arpa/inet.h> 
 #include <netinet/tcp.h>
+#include <sstream>
 
 #include "commands.hpp"
 #include "client.hpp"
@@ -57,13 +58,14 @@ public:
     //Server running
     void ServerListenerSock();
     void ServerError(std::string error_str);
+    void parseInitialMsg(Client *clt, int fd, char* fullCmd);
 
     //getters
     int getPort() const;
     std::string const getPassword() const;
 
     //commands
-    void authProcess(int fd);
+    void authProcess(Client *clt, int fd, char *fullcmd);
     void executeCmd(Client *clt, std::string cmd, std::string cmdValue);
     void authFirstSettings(Client *clt, char *fullCmd);
     

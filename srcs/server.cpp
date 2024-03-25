@@ -100,72 +100,75 @@ void Server::AddClients()
 		return;
 	}
 	else
+    {
+        Client *client = new Client(_client_socket);
+        std::cout << "Add client fd -> " << _client_socket << std::endl;
+	    _clients[_client_socket] = client;
 		this->pollfds.push_back((pollfd){_client_socket, POLLIN, 0});
+    }
 }
 
-void Server::authProcess(int fd)
+void Server::authProcess(Client *clt, int fd, char *fullCmd)
 {
-    /*if (clt->getFirstAuth() == 1)
+    std::string cmd = getCmd(fullCmd);
+    std::string cmdValue = getCmdValue(fullCmd);
+    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
+    if (cmdValue.empty())
     {
-        std::string user;
-        std::string nick;
-        char* CmdCopy = strdup(fullCmd);
-
-        if (CmdCopy == NULL) 
-        {
-            std::cerr << "Memory allocation failed." << std::endl;
-            return ;
-        }
-        char* token = std::strtok(CmdCopy, "\n");
-        while (token != NULL) 
-        {
-            char command[100];
-            char value[100];
-            sscanf(token, "%s %s", command, value);
-            std::string str(value);
-            if (strcmp(command, "USER") == 0)
-                user.assign(str);
-            else if (strcmp(command, "NICK") == 0)
-                nick.assign(str);
-            else if (!clt->getAuth() && strcmp(command, "PASS") == 0)
-                Command::password(clt, str, getPassword());
-            token = std::strtok(NULL, "\n");
-        }
-        Command::username(clt, user);
-        Command::nick(clt, nick);
-        free(CmdCopy);
-        clt->setFirstAuth(2);
+        error_print("No Arguments in cmd");
+        return ;
     }
+    if (cmd.compare("USER") == 0)
+        Command::username(clt, cmdValue);
+    else if (cmd.compare("NICK") == 0)
+        Command::nick(clt, cmdValue);
     else
+        executeCmd(clt, cmd, cmdValue);
+}
+
+void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
+{
+    std::istringstream bufferStream(fullCmd);
+    std::string line;
+    while (std::getline(bufferStream, line)) 
     {
-        std::string cmd = getCmd(fullCmd);
-        std::string cmdValue = getCmdValue(fullCmd);
-        std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-        if (cmdValue.empty())
+        size_t pos = line.find("PASS ");
+        if (pos != std::string::npos) 
         {
-            error_print("No Arguments in cmd");
-            return ;
+            std::string password1 = line.substr(pos + 5);
+            password1.erase(password1.size() - 1);
+            if (getPassword() != password1)
+            {
+                std::cout << "Client_" << fd << ": auth failed" << std::endl;
+                close(fd);
+                return ;
+            }
         }
-        if (!clt->getAuth() && cmd.compare("PASS") == 0)
-            Command::password(clt, cmdValue, getPassword());
-        else if (!clt->getAuth())
-            error_print("Use '/PASS [password]' to authenticate");
-        else if (clt->getAuth() && cmd.compare("/PASS") == 0)
-            error_print("Already Authenticated!");
-        else
+        pos = line.find("NICK ");
+        if (pos != std::string::npos) 
         {
-            if (cmd.compare("USER") == 0)
-                Command::username(clt, cmdValue);
-            else if (cmd.compare("NICK") == 0)
-                Command::nick(clt, cmdValue);
-            else
-                executeCmd(clt, cmd, cmdValue);
+            std::string nick1 = line.substr(pos);
+            char* nickBuffer = new char[nick1.length() + 1];
+            std::strcpy(nickBuffer, nick1.c_str());
+            authProcess(_clients[fd], fd, nickBuffer);
+            delete[] nickBuffer;
         }
-    }*/
+        pos = line.find("USER ");
+        if (pos != std::string::npos) 
+        {
+            std::string user1 = line.substr(pos);
+            char* userBuffer = new char[user1.length() + 1];
+            std::strcpy(userBuffer, user1.c_str());
+            authProcess(_clients[fd], fd, userBuffer);
+            delete[] userBuffer;
+        }
+    }
 }
 
 int Server::ServerStartUp()
 {
+    char buf[BUFFER_SIZE];
+
     std::cout << YELLOW << "Server is running on the port: " << RESET << getPort() << std::endl;
     ServerListenerSock();
     while (1)
@@ -187,8 +190,24 @@ int Server::ServerStartUp()
 					AddClients();
 					break ;
 				}
+                recv(pollfds[i].fd, buf, sizeof buf, 0);
+                while (!std::strstr(buf, "\r\n"))
+	            {
+	            	memset(buf, 0, BUFFER_SIZE);
+	            	if(recv(pollfds[i].fd, buf, BUFFER_SIZE, 0) == -1)
+	            	{
+	            		std::cerr << "Buffer Error" << std::endl;
+	            	}
+	            }
+                std::cout << buf << "----------" << std::endl;
 				std::cout << "EXECUTE CMD" << std::endl;
-				authProcess(pollfds[i].fd);
+                if (strncmp(buf, "CAP", 3) == 0)
+                {
+                    std::cout << "ENTROU\n" << std::endl;
+                    parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                }
+                else
+                    authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
 			}
 		}
 	}
