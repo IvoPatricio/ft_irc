@@ -63,17 +63,17 @@ void Server::ServerListenerSock(void)
 
 void Server::nickChecker(Client *clt, std::string nick)
 {
-    std::map<int, Client*>::iterator itClt;
+    /*std::map<int, Client*>::iterator itClt;
     for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
         Client* client = itClt->second;
         if (nick == client->getNick() && _clients.size() > 1)
         {
             std::cout << "NICK IS THE SAME" << std::endl;
-            Command::quit(clt, clt->getCltFd());
+            Command::quit(_clients, pollfds, clt, clt->getCltFd());
         }
     }
-    std::cout << "NICK IS NOT THE SAME" << std::endl;
+    std::cout << "NICK IS NOT THE SAME" << std::endl;*/
 }
 
 // TODO: change func to commands
@@ -82,7 +82,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
     if (cmd.compare("QUIT") == 0)
     {
-        Command::quit(clt, clt->getCltFd());
+        Command::quit(_clients, pollfds, clt, clt->getCltFd());
     }
     else if (cmd.compare("PRIVMSG") == 0)
     {
@@ -232,6 +232,7 @@ int Server::ServerStartUp()
                     std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
                     authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
                 }
+                memset(buf, 0, BUFFER_SIZE);
 			}
 		}
 	}

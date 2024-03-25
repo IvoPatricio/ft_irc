@@ -44,6 +44,7 @@ int	sendIrcMessage(std::string message, int clientId)
 	std::cout << "Sending message: " << message << std::endl;
 	if (send(clientId, message.c_str(), message.length(), 0) == -1)
 		exit(error_print("Error sending message"));
+    message.clear();
 	return 0;
 }
 
@@ -51,6 +52,7 @@ int	sendIrcMessage(std::string message, int clientId)
 // nick CAN change
 void Command::nick(Client *clt, std::string nick)
 {
+    std::cout << "nick: " << clt->getCltFd();
     if (nick.size() > 10)
     {
         error_print("Nick too big! Max 10 characters");
@@ -125,14 +127,14 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
 }
 
-void Command::quit(Client *clt, int fd)
+void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
 {
     close(fd);
-    /*std::map<int, Client*>::iterator it = _clients.find(fd);
-    if (it != _clients.end()) 
+    std::map<int, Client*>::iterator it = cltMap.find(fd);
+    if (it != cltMap.end()) 
     {
         delete it->second; // Delete the client object
-        _clients.erase(it); // Remove the client from the map
+        cltMap.erase(it); // Remove the client from the map
     }
     else 
     {
@@ -140,13 +142,16 @@ void Command::quit(Client *clt, int fd)
     }
 
     // Remove the associated pollfd from pollfds vector
-    std::vector<pollfd>::iterator pollIt = std::find_if(pollfds.begin(), pollfds.end(), [fd](const pollfd& pfd) {
+    /*std::vector<pollfd>::iterator pollIt = std::find_if(pollfds.begin(), pollfds.end(), [=](const pollfd& pfd) 
+    {
         return pfd.fd == fd;
     });
-    if (pollIt != pollfds.end()) {
+    if (pollIt != pollfds.end()) 
+    {
         pollfds.erase(pollIt);
     }
-    else {
+    else
+    {
         std::cerr << "Associated pollfd not found in pollfds vector." << std::endl;
     }*/
 }
