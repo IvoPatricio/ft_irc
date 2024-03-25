@@ -224,12 +224,15 @@ int Server::ServerStartUp()
 	            	std::cerr << "Buffer Error" << std::endl;
 	            }
                 std::cout << "\nBuffer:" << buf << "\n" << std::endl;
-                if (strncmp(buf, "CAP", 3) == 0 && pollfds[i].fd != 3)
-                    parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
-                else
+                if (pollfds[i].fd != 3)
                 {
-                    std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
-                    authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                    if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )) && pollfds[i].fd != 3)
+                        parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                    else
+                    {
+                        std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
+                        authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                    }
                 }
                 memset(buf, 0, BUFFER_SIZE);
 			}
