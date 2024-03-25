@@ -201,6 +201,24 @@ void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, C
 
 void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
 {
+    unsigned int x = 0;
+	unsigned int i = 0;
+
+	while (user.size() > i)
+	{
+		while (i < user.size() && (user[i] != ' ' && user[i] != '\r' && user[i] != '\n'))
+			i++;
+        if (i < user.size() && (user[i] == ' ' || user[i] == '\r' || user[i] == '\n'))
+			x++;
+		while (i < user.size() && (user[i] == ' ' || user[i] == '\r' || user[i] == '\n'))
+			i++;
+	}
+    std::cout << "\n\n" << x << "\n\n" << std::endl;
+	if (x != 2)
+    {
+		error_print("Wrong KICK format. /kick #channel user_name");
+		return;
+	}
     std::cout << "Kicking" << std::endl;
     size_t Pos1 = user.find(' ');
     size_t Pos2 = user.find(':');
@@ -233,7 +251,10 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
                     {
                         std::cout << "|MEMBER|" << memberList[i]->getNick() << remaining << "|MEMBER|" << std::endl;
                         if (memberList[i]->getNick() == remaining)
+                        {
                             std::cout << remaining << " is a member channel" << std::endl;
+                            sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + "SORRY!:\r\n", memberList[i]->getCltFd());
+                        }
                     }
                 }
             }

@@ -226,7 +226,7 @@ int Server::ServerStartUp()
                 std::cout << "\nBuffer:" << buf << "\n" << std::endl;
                 if (pollfds[i].fd != 3)
                 {
-                    if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )) && pollfds[i].fd != 3)
+                    if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )))
                         parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
                     else
                     {
