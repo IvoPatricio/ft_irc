@@ -253,7 +253,8 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
                         if (memberList[i]->getNick() == remaining)
                         {
                             std::cout << remaining << " is a member channel" << std::endl;
-                            sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + "SORRY!:\r\n", memberList[i]->getCltFd());
+                            sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + " (kicked)!:\r\n", memberList[i]->getCltFd());
+                            memberList.erase(memberList.begin() + i);
                         }
                     }
                 }
@@ -268,10 +269,11 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
 
 // }
 
-// void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
-// {
+/*
+void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
+{
 
-// }
+}*/
 
 // void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {

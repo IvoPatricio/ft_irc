@@ -59,7 +59,7 @@ public:
     void ServerListenerSock();
     void ServerError(std::string error_str);
     void parseInitialMsg(Client *clt, int fd, char* fullCmd);
-    void nickChecker(Client *clt, std::string nick);
+    int nickChecker(Client *clt, std::string nick);
 
     //getters
     int getPort() const;

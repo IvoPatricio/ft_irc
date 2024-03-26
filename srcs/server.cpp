@@ -61,18 +61,25 @@ void Server::ServerListenerSock(void)
     pollfds.push_back((pollfd){_server_socket, POLLIN, 0});
 }
 
-void Server::nickChecker(Client *clt, std::string nick)
+int Server::nickChecker(Client *clt, std::string nick)
 {
     std::map<int, Client*>::iterator itClt;
+
+    if (nick == clt->getNick())
+    {
+        error_print("You cant assign the same nick");
+        return 1;
+    }
     for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
-        if (nick == clt->getNick() && _clients.size() > 1)
+        if (nick == itClt->second->getNick())
         {
-            std::cout << "NICK IS THE SAME" << std::endl;
+            error_print("Nick already exists");
             Command::quit(_clients, pollfds, clt, clt->getCltFd());
+            return 1;
         }
     }
-    std::cout << "NICK IS NOT THE SAME" << std::endl;
+    return 0;
 }
 
 // TODO: change func to commands
@@ -142,8 +149,8 @@ void Server::authProcess(Client *clt, int fd, char *fullCmd)
         Command::username(clt, cmdValue);
     else if (cmd.compare("NICK") == 0)
     {
-        nickChecker(clt, cmdValue);
-        Command::nick(clt, cmdValue);
+        if (nickChecker(clt, cmdValue) == 0)
+            Command::nick(clt, cmdValue);
     }
     else
         executeCmd(clt, cmd, cmdValue);
