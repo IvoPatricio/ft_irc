@@ -102,6 +102,10 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     {
         Command::kick(_channels, clt, cmdValue, _clients);
     }
+    else if (cmd.compare("TOPIC") == 0)
+    {
+        Command::topic(_channels, clt, cmdValue, _clients);
+    }
     else if (cmd.compare("INVITE") == 0)
     {
 

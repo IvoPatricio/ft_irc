@@ -177,10 +177,8 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
 
 void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
 {
-    std::vector<pollfd>::iterator vecit;
-
-
-    /*for (vecit = pollfds.begin(); vecit != pollfds.end(); ++vecit)
+    /*std::vector<pollfd>::iterator vecit;
+    for (vecit = pollfds.begin(); vecit != pollfds.end(); ++vecit)
     {
         std::cout << "\nVEC:"<< vecit->fd << std::endl;
         if (vecit->fd == fd && vecit->fd != 3)
@@ -255,25 +253,40 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
                             std::cout << remaining << " is a member channel" << std::endl;
                             sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + " (kicked)!:\r\n", memberList[i]->getCltFd());
                             memberList.erase(memberList.begin() + i);
+                            return ;
                         }
+                        sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + " (kicked)!:\r\n", memberList[i]->getCltFd());
                     }
                 }
             }
         }
     }
-    error_print("Invalid channel");
+    error_print("Invalid KICK");
+}
+
+
+void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
+{
+    std::cout << "topic" << std::endl;
+    size_t Pos1 = user.find('#');
+    size_t Pos2 = user.find(':');
+
+    std::string channelName = user.substr(Pos1, Pos2 - Pos1 - 1);
+    std::string remaining = user.substr(Pos2 + 1);
+    std::cout << channelName << "|" << remaining << std::endl;
+    std::map<std::string, Channel*>::iterator it;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        if (it->second->getChannelName() == channelName)
+        {
+            ;
+        }
+    }
+    error_print("Invalid TOPIC");
 }
 
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
-
-// }
-
-/*
-void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
-{
-
-}*/
 
 // void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
