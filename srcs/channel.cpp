@@ -44,6 +44,30 @@ void Channel::addOperator(Client *clt)
     std::cout << "You are a operator now" << std::endl;
 }
 
+void Channel::removeMember(Client *clt)
+{
+    for (size_t i = 0; i < _memberList.size(); i++)
+    {
+        if (_memberList[i]->getCltFd() == clt->getCltFd())
+        {
+            _memberList.erase(_memberList.begin() + i);
+            return ;
+        }
+    }
+}
+
+void Channel::removeOperator(Client *clt)
+{
+    for (size_t i = 0; i < _operatorList.size(); i++)
+    {
+        if (_operatorList[i] == clt)
+        {
+            _operatorList.erase(_operatorList.begin() + i);
+            return ;
+        }
+    }
+}
+
 std::vector<Client*>& Channel::getMemberList()
 {
     return _memberList;

@@ -8,5 +8,6 @@ std::string getCmdValue(char *fullCmd);
 std::string getCmd(char *fullCmd);
 void parseMsg(std::string *msgArray, std::string fullMsg);
 int checkOneWord(std::string line);
+int	sendIrcMessage(std::string message, int clientId);
 
 #endif

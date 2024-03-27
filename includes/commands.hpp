@@ -5,6 +5,7 @@
 #include "client.hpp"
 #include "channel.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 
 class Channel;
 class Client;
@@ -23,7 +24,8 @@ public:
     static bool nick(std::map<std::string, Channel*> ChannelMap, Client *clt, std::string nick);
     static void privMsg(std::map<std::string, Channel*> channelMap,std::map<int, Client*> cltMap, Client *cltSend, std::string cmd);
     static void join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
-    static void quit(std::map<int, Client*> cltMap, std::vector<pollfd>	pollfds, Client *clt, int fd);
+    static void part(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
+    static void quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, std::vector<pollfd> pollfds, Client *clt, int fd);
     
     // operator cmds
     // TODO: check args needed
@@ -32,6 +34,7 @@ public:
 
     static void invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
     static void mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
+
 };
 
 

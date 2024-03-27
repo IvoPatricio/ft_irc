@@ -5,16 +5,6 @@ Command::Command() {}
 
 Command::~Command() {}
 
-int	sendIrcMessage(std::string message, int clientId)
-{
-	message = message + "\r\n";
-	std::cout << "Sending message to clt id " << clientId << " : " << message << std::endl;
-	if (send(clientId, message.c_str(), message.length(), 0) == -1)
-		exit(error_print("Error sending message"));
-    message.clear();
-	return 0;
-}
-
 int	sendChannelMessage(std::string message, std::vector<Client*> clts)
 {
     std::vector<Client*>::iterator it;
@@ -88,13 +78,10 @@ void updateNickInChannels(std::map<std::string, Channel*> channelMap, Client *cl
         size_t size = it->second->getMemberList().size();
         for (size_t i = 0; i < size ; i++)
         {
-            std::cout << std::endl << "Nameeeee -> " << it->second->getMemberList()[i]->getNick() << std::endl;
             if (it->second->getMemberList()[i]->getNick() == clt->getNick())
             {
-                std::cout << std::endl << "CHEGUEI AQUI KRLLLL" << std::endl;
                 for (size_t j = 0; j < size; j++)
                 {
-                    // sendMembersToNewUser(it->second, it->second->getMemberList()[j]);
                     sendIrcMessage(":" + oldNick + " NICK :" + clt->getNick(), it->second->getMemberList()[j]->getCltFd());
                 }
                 break ;
@@ -109,11 +96,6 @@ bool Command::nick(std::map<std::string, Channel*> channelMap, Client *clt, std:
 {
     std::string oldNick = "";
     std::cout << "nick: " << clt->getCltFd();
-    if (nick.size() > 10)
-    {
-        error_print("Nick too big! Max 10 characters");
-        return false;
-    }
     if (!checkOneWord(nick))
     {
         error_print("Nick can't be more than one word!");
@@ -144,7 +126,7 @@ void sendToAllInChannel(Client *cltSend, std::vector<Client*> clts, std::string 
 // /PRIVMSG [user/nick] [msg]
 void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, Client*> cltMap, Client *cltSend, std::string cmd)
 {
-    (void)cltSend;
+    // (void)cltSend;
     std::string msg[2];
     parseMsg(msg, cmd);
     // std::cout << std::endl << "Pmsg:" << std::endl;
@@ -156,7 +138,7 @@ void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, 
         {
             //channel exists
             // sendIrcMessage("PRIVMSG " + msg[0], ->getCltFd());
-    
+            msg[1].erase(msg[1].begin());
             sendToAllInChannel(cltSend, channelMap[msg[0]]->getMemberList(), msg[1], msg[0]);
             // sendChannelMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
         }
@@ -191,9 +173,14 @@ void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, 
 // usage -> /JOIN [channeName]
 void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName)
 {
-    
+    if(channelName[0] != '#')
+    {
+        sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :Invalid channel name. Channel has to start with '#'", clt->getCltFd());
+        return ;
+    }
     if (!checkOneWord(channelName))
     {
+        sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :Bad channel name", clt->getCltFd());
         error_print("Channel name has to be one word!");
         return ;
     }
@@ -214,7 +201,42 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
 }
 
-void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
+void Command::part(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName)
+{
+    std::string channelNameCut = channelName.substr(0, channelName.find_first_of(" "));
+    for (size_t i = 0; i < channelMap[channelNameCut]->getMemberList().size(); i++)
+    {
+        if (clt->getNick() == channelMap[channelNameCut]->getMemberList()[i]->getNick())
+        {
+            channelMap[channelNameCut]->removeMember(clt);
+            for (size_t i = 0; i < channelMap[channelNameCut]->getOperatorList().size(); i++)
+            {
+                if (clt->getNick() == channelMap[channelNameCut]->getOperatorList()[i]->getNick())
+                    channelMap[channelNameCut]->removeOperator(clt);
+            }
+        }
+        else
+            sendIrcMessage(":" + clt->getNick() + " PART " + channelNameCut + ":User left the channel", channelMap[channelNameCut]->getMemberList()[i]->getCltFd());
+    }
+}
+
+void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Client *clt)
+{
+    std::map<std::string, Channel*>::iterator it;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        for (size_t i = 0; i < it->second->getMemberList().size(); i++)
+        {
+            if (it->second->getMemberList()[i]->getCltFd() == clt->getCltFd())
+            {
+                Command::part(channelMap, clt, it->first);
+                break;
+            }
+        }
+    }
+} 
+
+void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
 {
     /*std::vector<pollfd>::iterator vecit;
     for (vecit = pollfds.begin(); vecit != pollfds.end(); ++vecit)
@@ -227,13 +249,15 @@ void Command::quit(std::map<int, Client*> cltMap, std::vector<pollfd> pollfds, C
             pollfds.erase(vecit);
         }
     }*/
-    close(fd);
+    removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
     if (it != cltMap.end()) 
     {
         delete it->second;
+        it->second = NULL;
         cltMap.erase(it);
     }
+    close(fd);
 }
 
 void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)

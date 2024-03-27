@@ -61,12 +61,36 @@ void Server::ServerListenerSock(void)
     pollfds.push_back((pollfd){_server_socket, POLLIN, 0});
 }
 
+int Server::userChecker(Client *clt, std::string user)
+{
+    std::map<int, Client*>::iterator itClt;
+
+    if (user == clt->getUser())
+    {
+        error_print("You cant assign the same user");
+        return 1;
+    }
+    for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
+    {
+        if (user == itClt->second->getUser())
+        {
+            error_print("User already exists");
+            // Command::quit(_channels, _clients, pollfds, clt, clt->getCltFd());
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int Server::nickChecker(Client *clt, std::string nick)
 {
     std::map<int, Client*>::iterator itClt;
 
+    if (!checkOneWord(nick) || nick[0] == '#' || nick[0] == ':') //TODO: this is not working well
+        sendIrcMessage(":@localhost 432 " + clt->getNick() + " :Invalid nickname", clt->getCltFd());
     if (nick == clt->getNick())
     {
+        sendIrcMessage(":@localhost 433 " + clt->getNick() + " :Nickname is use", clt->getCltFd());
         error_print("You cant assign the same nick");
         return 1;
     }
@@ -74,8 +98,9 @@ int Server::nickChecker(Client *clt, std::string nick)
     {
         if (nick == itClt->second->getNick())
         {
+            sendIrcMessage(":@localhost 433 " + clt->getNick() + " :Nickname is use", clt->getCltFd());
             error_print("Nick already exists");
-            Command::quit(_clients, pollfds, clt, clt->getCltFd());
+            // Command::quit(_channels, _clients, pollfds, clt, clt->getCltFd());
             return 1;
         }
     }
@@ -88,7 +113,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
     if (cmd.compare("QUIT") == 0)
     {
-        Command::quit(_clients, pollfds, clt, clt->getCltFd());
+        Command::quit(_channels, _clients, pollfds, clt, clt->getCltFd());
     }
     else if (cmd.compare("PRIVMSG") == 0)
     {
@@ -97,6 +122,10 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     else if (cmd.compare("JOIN") == 0)
     {
         Command::join(_channels, clt, cmdValue);
+    }
+    else if (cmd.compare("PART") == 0)
+    {
+        Command::part(_channels, clt, cmdValue);
     }
     else if (cmd.compare("KICK") == 0)
     {
@@ -120,6 +149,32 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
 }
 
+void Server::authProcess(Client *clt, int fd, char *fullCmd)
+{
+    if (!clt)
+        return ;
+    std::string cmd = getCmd(fullCmd);
+    std::string cmdValue = getCmdValue(fullCmd);
+    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
+    if (cmdValue.empty())
+    {
+        error_print("No Arguments in cmd");
+        return ;
+    }
+    if (cmd.compare("USER") == 0)
+    {
+        if (userChecker(clt, cmdValue) == 0)
+            Command::username(clt, cmdValue);
+    }
+    else if (cmd.compare("NICK") == 0)
+    {
+        if (nickChecker(clt, cmdValue) == 0)
+            Command::nick(_channels, clt, cmdValue);
+    }
+    else
+        executeCmd(clt, cmd, cmdValue);
+}
+
 void Server::AddClients()
 {
     int	addr_len = sizeof(server_address);
@@ -137,27 +192,6 @@ void Server::AddClients()
 	    _clients[_client_socket] = client;
 		this->pollfds.push_back((pollfd){_client_socket, POLLIN, 0});
     }
-}
-
-void Server::authProcess(Client *clt, int fd, char *fullCmd)
-{
-    std::string cmd = getCmd(fullCmd);
-    std::string cmdValue = getCmdValue(fullCmd);
-    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-    if (cmdValue.empty())
-    {
-        error_print("No Arguments in cmd");
-        return ;
-    }
-    if (cmd.compare("USER") == 0)
-        Command::username(clt, cmdValue);
-    else if (cmd.compare("NICK") == 0)
-    {
-        if (nickChecker(clt, cmdValue) == 0)
-            Command::nick(_channels, clt, cmdValue);
-    }
-    else
-        executeCmd(clt, cmd, cmdValue);
 }
 
 void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
