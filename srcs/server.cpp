@@ -154,7 +154,7 @@ void Server::authProcess(Client *clt, int fd, char *fullCmd)
     else if (cmd.compare("NICK") == 0)
     {
         if (nickChecker(clt, cmdValue) == 0)
-            Command::nick(clt, cmdValue);
+            Command::nick(_channels, clt, cmdValue);
     }
     else
         executeCmd(clt, cmd, cmdValue);
