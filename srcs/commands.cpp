@@ -162,7 +162,6 @@ void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, 
                 if (msg[1][0] != ':')
                 {
                     sendIrcMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
-                    sendIrcMessage(":" + msg[0] + " PRIVMSG " + cltSend->getNick() + " :" + msg[1], cltSend->getCltFd());
                 }
                 else
                 {
