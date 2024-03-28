@@ -68,6 +68,7 @@ void sendMembersToNewUser(Channel *channel, Client *clt)
             nickListString += (*it)->getNick() + " ";
     }
     sendIrcMessage(":@localhost 353 " + clt->getNick() + " = " + channel->getChannelName() + " :" + nickListString, clt->getCltFd());
+    sendIrcMessage(":@localhost 366 " + clt->getNick() + " " + channel->getChannelName() + " :End of NAMES list", clt->getCltFd());
 }
 
 void updateNickInChannels(std::map<std::string, Channel*> channelMap, Client *clt, std::string oldNick)
@@ -218,8 +219,11 @@ void Command::part(std::map<std::string, Channel*> &channelMap, Client *clt, std
                     channelMap[channelNameCut]->removeOperator(clt);
             }
         }
-        else
-            sendIrcMessage(":" + clt->getNick() + " PART " + channelNameCut + ":User left the channel", channelMap[channelNameCut]->getMemberList()[i]->getCltFd());
+    }
+    for (size_t i = 0; i < channelMap[channelNameCut]->getMemberList().size(); i++)
+    {
+        sendIrcMessage(":" + clt->getNick() + "@localhost PART " + channelName, channelMap[channelNameCut]->getMemberList()[i]->getCltFd());
+        sendMembersToNewUser(channelMap[channelNameCut], channelMap[channelNameCut]->getMemberList()[i]);
     }
 }
 
@@ -237,13 +241,13 @@ void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Clie
             }
         }
     }
-} 
+}
 
 void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, Client *clt, int fd)
 {
     removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
-    if (it != cltMap.end()) 
+    if (it != cltMap.end())
     {
         delete it->second;
         it->second = NULL;
@@ -391,7 +395,7 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
     size_t Pos1 = cmd.find('#');
     size_t Pos2 = cmd.find(' ', Pos1 + 1);
     size_t Pos3 = cmd.find(' ', Pos2 + 1);
-    
+
     std::string channelName, remaining1, remaining2;
     if (Pos2 != std::string::npos)
     {
