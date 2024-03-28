@@ -238,17 +238,6 @@ void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Clie
 
 void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
 {
-    /*std::vector<pollfd>::iterator vecit;
-    for (vecit = pollfds.begin(); vecit != pollfds.end(); ++vecit)
-    {
-        std::cout << "\nVEC:"<< vecit->fd << std::endl;
-        if (vecit->fd == fd && vecit->fd != 3)
-        {
-            std::cout << "\nVEC:"<< vecit->fd << std::endl;
-            close(fd);
-            pollfds.erase(vecit);
-        }
-    }*/
     removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
     if (it != cltMap.end()) 
@@ -290,8 +279,8 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
     std::cout << "Channel Name: " << channelName << std::endl;
     std::cout << "Remaining: " << remaining << std::endl;
 
-    std::map<std::string, Channel*>::iterator it;
     std::cout << "\n\n" << remaining << std::endl;
+    std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
         //Checking channel name
@@ -318,7 +307,6 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
                             memberList.erase(memberList.begin() + i);
                             return ;
                         }
-                        sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + " (kicked)!:\r\n", memberList[i]->getCltFd());
                     }
                 }
             }
@@ -342,7 +330,22 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
     {
         if (it->second->getChannelName() == channelName)
         {
-            ;
+            std::vector<Client*> operatorList = it->second->getOperatorList();
+            std::cout << "Operator List:" << std::endl;
+            //checking the operators channel list
+            for (size_t i = 0; i < operatorList.size(); ++i)
+            {
+                std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
+                if (operatorList[i]->getNick() == clt->getNick())
+                {
+                    std::cout << clt->getNick() << " is an operator" << std::endl;
+                    std::string message = "TOPIC " + channelName + " :" + "newTopic" + "\r\n";
+                    //send irc for all
+                    sendIrcMessage(message, clt->getCltFd());
+                    return ;
+                }
+            
+            }
         }
     }
     error_print("Invalid TOPIC");
