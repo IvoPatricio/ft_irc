@@ -290,7 +290,6 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
         {
             std::vector<Client*> operatorList = it->second->getOperatorList();
             std::cout << "Operator List:" << std::endl;
-            //checking the operators channel list
             for (size_t i = 0; i < operatorList.size(); ++i)
             {
                 std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
@@ -298,7 +297,6 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
                 {
                     std::cout << clt->getNick() << " is an operator" << std::endl;
                     std::vector<Client*> memberList = it->second->getMemberList();
-                    //checking the members channel list
                     for (size_t i = 0; i < memberList.size(); ++i)
                     {
                         std::cout << "|MEMBER|" << memberList[i]->getNick() << remaining << "|MEMBER|" << std::endl;
@@ -332,24 +330,53 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
     {
         if (it->second->getChannelName() == channelName)
         {
-            std::vector<Client*> operatorList = it->second->getOperatorList();
-            std::cout << "Operator List:" << std::endl;
-            //checking the operators channel list
-            for (size_t i = 0; i < operatorList.size(); ++i)
+            if (it->second->getTopicMode() == true)
             {
-                std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
-                if (operatorList[i]->getNick() == clt->getNick())
+                std::vector<Client*> operatorList = it->second->getOperatorList();
+                for (size_t i = 0; i < operatorList.size(); ++i)
                 {
-                    it->second->setChannelTopic(remaining);
-                    std::cout << clt->getNick() << " is an operator" << std::endl;
-                    std::map<int, Client*>::iterator it;
-                    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                    if (operatorList[i]->getNick() == clt->getNick())
                     {
-                        sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
+                        it->second->setChannelTopic(remaining);
+                        std::map<int, Client*>::iterator it;
+                        for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                        {
+                            sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
+                        }
+                        return ;
                     }
-                    return ;
                 }
-            
+            }
+            else if (it->second->getTopicMode() == false)
+            {
+                std::vector<Client*> memberList = it->second->getMemberList();
+                for (size_t i = 0; i < memberList.size(); ++i)
+                {
+                    if (memberList[i]->getNick() == clt->getNick())
+                    {
+                        it->second->setChannelTopic(remaining);
+                        std::map<int, Client*>::iterator it;
+                        for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                        {
+                            sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
+                        }
+                        return ;
+                    }
+                }
+                std::vector<Client*> operatorList = it->second->getOperatorList();
+                for (size_t i = 0; i < operatorList.size(); ++i)
+                {
+                    if (operatorList[i]->getNick() == clt->getNick())
+                    {
+                        it->second->setChannelTopic(remaining);
+                        std::map<int, Client*>::iterator it;
+                        for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                        {
+                            sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
+                        }
+                        return ;
+                    }
+                }
             }
         }
     }
@@ -361,8 +388,6 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
 
 void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients)
 {
-    std::cout << "MODE\n\n\n\n" << std::endl;
-    std::cout << cmd << "\n\n" << std::endl;
     size_t Pos1 = cmd.find('#');
     size_t Pos2 = cmd.find(' ', Pos1 + 1);
     size_t Pos3 = cmd.find(' ', Pos2 + 1);
@@ -382,9 +407,11 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
             remaining2 = "";
         }
     }
-    else 
+    else
+    {
+        error_print("Invalid MODE");
         return ;
-
+    }
     std::cout << channelName << "|" << remaining1 << "|" << remaining2 << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
@@ -396,7 +423,6 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
             {
                 if (operatorList[i]->getNick() == clt->getNick())
                 {
-                    std::cout << it->second->getChannelName() << " invite mode is: " << it->second->getInviteMode() << std::endl;
                     if (remaining1 == "+i")
                         it->second->setInviteMode(true);
                     else if (remaining1 == "-i")
@@ -412,15 +438,50 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                     }
                     else if (remaining1 == "-k")
                         it->second->setPasswordMode(false);
-                    /*else if (remaining1 == "+o")
+                    else if (remaining1 == "+l")
                     {
-
+                        const char* str = remaining2.c_str();
+                        it->second->setLimitUsers(std::atoi(str));
+                        it->second->setLimitMode(true);
                     }
-                    else if (remaining1 == "-o")
+                    else if (remaining1 == "-l")
+                        it->second->setLimitMode(false);
+                    else if (remaining1 == "+o" || remaining1 == "-o")
                     {
-
-                    }*/
-                    std::cout << it->second->getChannelName() << " invite mode set to: " << it->second->getInviteMode() << std::endl;
+                        std::vector<Client*> operatorList = it->second->getOperatorList();
+                        for (size_t i = 0; i < operatorList.size(); ++i)
+                        {
+                            if (operatorList[i]->getNick() == clt->getNick())
+                            {
+                                if (remaining1 == "+o")
+                                {
+                                    std::vector<Client*> memberList = it->second->getMemberList();
+                                    for (size_t i = 0; i < memberList.size(); ++i)
+                                    {
+                                        if (memberList[i]->getNick() == remaining2)
+                                        {
+                                            it->second->addOperator(memberList[i]);
+                                            it->second->removeMember(memberList[i]);
+                                            return ;
+                                        }
+                                    }
+                                }
+                                else if (remaining1 == "-o")
+                                {
+                                    std::vector<Client*> operatorList = it->second->getMemberList();
+                                    for (size_t i = 0; i < operatorList.size(); ++i)
+                                    {
+                                        if (operatorList[i]->getNick() == remaining2)
+                                        {
+                                            it->second->addMember(operatorList[i]);
+                                            it->second->removeOperator(operatorList[i]);
+                                            return ;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     return ;
                 }
             }

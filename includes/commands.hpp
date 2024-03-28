@@ -6,6 +6,9 @@
 #include "channel.hpp"
 #include "server.hpp"
 #include "utils.hpp"
+#include <iostream>
+#include <string>
+#include <sstream>
 
 class Channel;
 class Client;

@@ -15,8 +15,10 @@ private:
     bool                    _inviteMode;
     bool                    _topicMode;
     bool                    _passwordMode;
+    bool                    _limitMode;
     std::vector<Client*>    _memberList;
     std::vector<Client*>    _operatorList;
+    int                     _userLimit;
 
 public:
     Channel(std::string channelName, Client *clt);
@@ -36,6 +38,8 @@ public:
     //setters
     void setChannelTopic(std::string topic);
     void setChannelPassword(std::string password);
+    void setLimitUsers(int limit);
+    void setLimitMode(bool value);
 
     //mode getters&setters
     bool getInviteMode();
