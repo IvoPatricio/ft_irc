@@ -1,7 +1,7 @@
 #include "../includes/channel.hpp"
 
 Channel::Channel(std::string channelName, Client *clt)
-    : _channelName(channelName), _channelPassword(""), _channelTopic(""),
+    : _channelName(channelName), _channelPassword(""), _channelTopic(""), _password(""),
     _inviteMode(false), _topicMode(false), _passwordMode(false)
 {
     _memberList.push_back(clt);
@@ -91,6 +91,11 @@ std::vector<Client*>& Channel::getOperatorList()
 std::string Channel::getChannelName()
 {
     return _channelName;
+}
+
+void Channel::setChannelPassword(std::string password)
+{
+    _password = password;
 }
 
 bool Channel::getInviteMode()

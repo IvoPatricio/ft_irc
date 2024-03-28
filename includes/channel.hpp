@@ -11,6 +11,7 @@ private:
     std::string             _channelName;
     std::string             _channelPassword;
     std::string             _channelTopic;
+    std::string             _password;
     bool                    _inviteMode;
     bool                    _topicMode;
     bool                    _passwordMode;
@@ -34,6 +35,7 @@ public:
 
     //setters
     void setChannelTopic(std::string topic);
+    void setChannelPassword(std::string password);
 
     //mode getters&setters
     bool getInviteMode();

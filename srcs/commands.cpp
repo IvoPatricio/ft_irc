@@ -361,12 +361,28 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
     std::cout << "MODE\n\n\n\n" << std::endl;
     std::cout << cmd << "\n\n" << std::endl;
     size_t Pos1 = cmd.find('#');
-    size_t Pos2 = cmd.find(' ');
+    size_t Pos2 = cmd.find(' ', Pos1 + 1);
+    size_t Pos3 = cmd.find(' ', Pos2 + 1);
+    
+    std::string channelName, remaining1, remaining2;
+    if (Pos2 != std::string::npos)
+    {
+        channelName = cmd.substr(Pos1, Pos2 - Pos1);
+        if (Pos3 != std::string::npos)
+        {
+            remaining1 = cmd.substr(Pos2 + 1, Pos3 - Pos2 - 1);
+            remaining2 = cmd.substr(Pos3 + 1);
+        }
+        else
+        {
+            remaining1 = cmd.substr(Pos2 + 1);
+            remaining2 = "";
+        }
+    }
+    else 
+        return ;
 
-    std::string channelName = cmd.substr(Pos1, Pos2 - Pos1);
-    std::string remaining = cmd.substr(Pos2 + 1);
-    std::cout << channelName << "|" << remaining << std::endl;
-
+    std::cout << channelName << "|" << remaining1 << "|" << remaining2 << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
@@ -378,10 +394,29 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                 if (operatorList[i]->getNick() == clt->getNick())
                 {
                     std::cout << it->second->getChannelName() << " invite mode is: " << it->second->getInviteMode() << std::endl;
-                    if (remaining == "+i")
+                    if (remaining1 == "+i")
                         it->second->setInviteMode(true);
-                    else if (remaining == "-i")
+                    else if (remaining1 == "-i")
                         it->second->setInviteMode(false);
+                    else if (remaining1 == "+t")
+                        it->second->setTopicMode(true);
+                    else if (remaining1 == "-t")
+                        it->second->setTopicMode(false);
+                    else if (remaining1 == "+k")
+                    {
+                        it->second->setChannelPassword(remaining2);
+                        it->second->setPasswordMode(true);
+                    }
+                    else if (remaining1 == "-k")
+                        it->second->setPasswordMode(false);
+                    /*else if (remaining1 == "+o")
+                    {
+
+                    }
+                    else if (remaining1 == "-o")
+                    {
+
+                    }*/
                     std::cout << it->second->getChannelName() << " invite mode set to: " << it->second->getInviteMode() << std::endl;
                     return ;
                 }
