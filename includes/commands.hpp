@@ -25,11 +25,11 @@ public:
     static void privMsg(std::map<std::string, Channel*> channelMap,std::map<int, Client*> cltMap, Client *cltSend, std::string cmd);
     static void join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
     static void part(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName);
-    static void quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, std::vector<pollfd> pollfds, Client *clt, int fd);
+    static void quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, Client *clt, int fd);
     
     // operator cmds
     // TODO: check args needed
-    static void kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients);
+    static void kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user);
     static void topic(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients);
 
     static void invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);

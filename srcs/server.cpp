@@ -113,7 +113,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
     if (cmd.compare("QUIT") == 0)
     {
-        Command::quit(_channels, _clients, pollfds, clt, clt->getCltFd());
+        Command::quit(_channels, _clients, clt, clt->getCltFd());
     }
     else if (cmd.compare("PRIVMSG") == 0)
     {
@@ -129,7 +129,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("KICK") == 0)
     {
-        Command::kick(_channels, clt, cmdValue, _clients);
+        Command::kick(_channels, clt, cmdValue);
     }
     else if (cmd.compare("TOPIC") == 0)
     {
@@ -149,7 +149,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
 }
 
-void Server::authProcess(Client *clt, int fd, char *fullCmd)
+void Server::authProcess(Client *clt, char *fullCmd)
 {
     if (!clt)
         return ;
@@ -194,7 +194,7 @@ void Server::AddClients()
     }
 }
 
-void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
+void Server::parseInitialMsg(int fd, char* fullCmd)
 {
     std::istringstream bufferStream(fullCmd);
     std::string line;
@@ -224,7 +224,7 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
             std::string nick1 = line.substr(pos2);
             char* nickBuffer = new char[nick1.length() + 1];
             std::strcpy(nickBuffer, nick1.c_str());
-            authProcess(_clients[fd], fd, nickBuffer);
+            authProcess(_clients[fd], nickBuffer);
             delete[] nickBuffer;
         }
         size_t pos3 = line.find(" 0 * :realname");
@@ -233,10 +233,20 @@ void Server::parseInitialMsg(Client *clt, int fd, char* fullCmd)
             std::string user1 = line.substr(0, pos3);
             char* userBuffer = new char[user1.length() + 1];
             std::strcpy(userBuffer, user1.c_str());
-            authProcess(_clients[fd], fd, userBuffer);
+            authProcess(_clients[fd], userBuffer);
             delete[] userBuffer;
         }
     }
+}
+
+void Server::availableCMDS()
+{
+    std::cout << "Nick: /nick nick " << std::endl;
+    std::cout << "Join: /join #channel" << std::endl;
+    std::cout << "Invite: /invite nick" << std::endl;
+    std::cout << "Topic: /topic #channel topic" << std::endl;
+    std::cout << "Quit: /quit " << std::endl;
+    std::cout << "Mode" << std::endl;
 }
 
 int Server::ServerStartUp()
@@ -245,6 +255,7 @@ int Server::ServerStartUp()
 
     std::cout << YELLOW << "Server is running on the port: " << RESET << getPort() << std::endl;
     ServerListenerSock();
+    availableCMDS();
     while (1)
 	{
 		if(0 > poll(pollfds.begin().base(), pollfds.size(), -1))
@@ -272,11 +283,11 @@ int Server::ServerStartUp()
                 if (pollfds[i].fd != 3)
                 {
                     if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )))
-                        parseInitialMsg(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                        parseInitialMsg(pollfds[i].fd, buf);
                     else
                     {
                         std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
-                        authProcess(_clients[pollfds[i].fd], pollfds[i].fd, buf);
+                        authProcess(_clients[pollfds[i].fd], buf);
                     }
                 }
                 memset(buf, 0, BUFFER_SIZE);

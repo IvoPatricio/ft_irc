@@ -58,16 +58,17 @@ public:
     //Server running
     void ServerListenerSock();
     void ServerError(std::string error_str);
-    void parseInitialMsg(Client *clt, int fd, char* fullCmd);
+    void parseInitialMsg(int fd, char* fullCmd);
     int nickChecker(Client *clt, std::string nick);
     int userChecker(Client *clt, std::string user);
+    void availableCMDS();
 
     //getters
     int getPort() const;
     std::string const getPassword() const;
 
     //commands
-    void authProcess(Client *clt, int fd, char *fullcmd);
+    void authProcess(Client *clt, char *fullcmd);
     void executeCmd(Client *clt, std::string cmd, std::string cmdValue);
     void authFirstSettings(Client *clt, char *fullCmd);
     

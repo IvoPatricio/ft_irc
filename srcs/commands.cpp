@@ -236,7 +236,7 @@ void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Clie
     }
 } 
 
-void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, std::vector<pollfd> pollfds, Client *clt, int fd)
+void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, Client *clt, int fd)
 {
     removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
@@ -249,7 +249,7 @@ void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Cl
     close(fd);
 }
 
-void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
+void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user)
 {
     unsigned int x = 0;
 	unsigned int i = 0;
@@ -356,7 +356,8 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
 
-// void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
-// {
+/*
+void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
+{
 
-// }
+}*/
