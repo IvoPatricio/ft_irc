@@ -283,7 +283,6 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
-        //Checking channel name
         if (it->second->getChannelName() == channelName)
         {
             std::vector<Client*> operatorList = it->second->getOperatorList();
@@ -356,8 +355,12 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
 
-/*
 void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 {
 
-}*/
+    /*i: Set/remove Invite-only channel
+    · t: Set/remove the restrictions of the TOPIC command to channel
+    operators
+    · k: Set/remove the channel key (password)
+    · o: Give/take channel operator privilege*/
+}

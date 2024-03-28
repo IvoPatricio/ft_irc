@@ -31,6 +31,14 @@ public:
     std::vector<Client*> &getOperatorList();
     std::string getChannelName();
 
+    //mode getters&setters
+    bool getInviteMode();
+    bool getTopicMode();
+    bool getPasswordMode();
+    void setInviteMode(bool value);
+    void setTopicMode(bool value);
+    void setPasswordMode(bool value);
+
 };
 
 #endif

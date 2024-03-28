@@ -82,3 +82,33 @@ std::string Channel::getChannelName()
 {
     return _channelName;
 }
+
+bool Channel::getInviteMode()
+{
+    return _inviteMode;
+}
+
+bool Channel::getTopicMode()
+{
+    return _topicMode;
+}
+
+bool Channel::getPasswordMode()
+{
+    return _passwordMode;
+}
+
+void Channel::setInviteMode(bool value)
+{
+    _inviteMode = value;
+}
+
+void Channel::setTopicMode(bool value)
+{
+    _topicMode = value;
+}
+
+void Channel::setPasswordMode(bool value)
+{
+    _passwordMode = value;
+}
