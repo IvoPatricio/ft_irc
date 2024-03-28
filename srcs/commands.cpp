@@ -192,12 +192,15 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
         //channel exists
         channelMap[channelName]->addMember(clt);
         sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
+        sendIrcMessage(":@localhost 332 " + clt->getNick() + " " + channelName + " :" + channelMap[channelName]->getChannelTopic(), clt->getCltFd());
         sendMembersToNewUser(channelMap[channelName], clt);
     }
     else
     {
         channelMap[channelName] = new Channel(channelName, clt);
         sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
+        sendIrcMessage(":@localhost 332 " + clt->getNick() + " " + channelName + " :No topic is set", clt->getCltFd());
+        channelMap[channelName]->setChannelTopic("No topic is set");
         sendMembersToNewUser(channelMap[channelName], clt);
         // sendIrcMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, clt->getCltFd());
         // sendIrcMessage(":@localhost 366" + clt->getNick() + " " + channelName + ":End of NAMES list", clt->getCltFd());
