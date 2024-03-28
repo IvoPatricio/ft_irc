@@ -1,8 +1,9 @@
 #include "../includes/server.hpp"
 
-Server::Server(int port, std::string password) : _port(port), _password(password), _clients(), pollfds(), _server_socket()
+Server::Server(int port, std::string password) : _port(port), _password(password), _clients(), pollfds(), _server_socket(), _running(true)
 {
     std::cout << "+Server Constructor called" << std::endl;
+    _running = true;
 }
 
 Server::~Server()
@@ -266,14 +267,24 @@ void Server::availableCMDS()
     std::cout << "Mode" << std::endl;
 }
 
+void Server::signalHandler(int signal) 
+{
+    if (signal == SIGINT) 
+    {
+        std::cout << "Received SIGINT. Stopping server..." << std::endl;
+        exit(0);
+    }
+}
+
 int Server::ServerStartUp()
 {
     char buf[BUFFER_SIZE];
 
+    signal(SIGINT, signalHandler);
     std::cout << YELLOW << "Server is running on the port: " << RESET << getPort() << std::endl;
     ServerListenerSock();
     availableCMDS();
-    while (1)
+    while (_running)
 	{
 		if(0 > poll(pollfds.begin().base(), pollfds.size(), -1))
 			std::cout << "poll fail" << std::endl;

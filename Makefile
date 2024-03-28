@@ -1,10 +1,10 @@
-SRC				= srcs/main.cpp srcs/server.cpp srcs/client.cpp srcs/sig_utils.cpp srcs/channel.cpp srcs/commands.cpp srcs/utils.cpp
+SRC				= srcs/main.cpp srcs/server.cpp srcs/client.cpp srcs/channel.cpp srcs/commands.cpp srcs/utils.cpp
 
 OBJ				= $(SRC:.cpp=.o)
 
 CC				= c++
 
-FLAGS			= -fsanitize=address -g -std=c++98 
+FLAGS			= -std=c++98 
 
 NAME			= ircserv
 

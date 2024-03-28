@@ -24,7 +24,6 @@
 #include "client.hpp"
 #include "channel.hpp"
 #include "main.hpp"
-#include "sig_utils.hpp"
 #include "utils.hpp"
 
 #define BUFFER_SIZE 10000
@@ -38,6 +37,7 @@ class Server
 private:
     int _port;
     std::string _password;
+    bool _running;
 
     std::map<int, Client*> _clients;
     std::map<std::string, Channel*> _channels;
@@ -51,6 +51,7 @@ public:
     Server(int port, std::string password);
     ~Server();
 
+    static void signalHandler(int signal);
     //Server startup
     int ServerStartUp();
     //Cliente

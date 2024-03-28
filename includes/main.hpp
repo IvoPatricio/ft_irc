@@ -8,7 +8,6 @@
 #include <cerrno>
 #include <stdio.h>
 #include "server.hpp"
-#include "sig_utils.hpp"
 
 #define RED "\033[1m\033[31m"
 #define YELLOW "\033[33m"
