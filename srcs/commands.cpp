@@ -101,11 +101,14 @@ bool Command::nick(std::map<std::string, Channel*> channelMap, Client *clt, std:
         error_print("Nick can't be more than one word!");
         return false;
     }
-    sendIrcMessage(":" + clt->getNick() + " NICK :" + nick, clt->getCltFd());
     if (clt->getNick().empty())
+    {
+        sendIrcMessage(": NICK :" + nick, clt->getCltFd());
         clt->setNick(nick);
+    }
     else
     {
+        sendIrcMessage(":" + clt->getNick() + " NICK :" + nick, clt->getCltFd());
         oldNick = clt->getNick();
         clt->setNick(nick);
         updateNickInChannels(channelMap, clt, oldNick);

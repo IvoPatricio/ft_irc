@@ -86,11 +86,20 @@ int Server::nickChecker(Client *clt, std::string nick)
 {
     std::map<int, Client*>::iterator itClt;
 
-    if (!checkOneWord(nick) || nick[0] == '#' || nick[0] == ':') //TODO: this is not working well
-        sendIrcMessage(":@localhost 432 " + clt->getNick() + " :Invalid nickname", clt->getCltFd());
+    if (nick.empty())
+    {
+        sendIrcMessage(":@localhost 431 " + clt->getNick() + " :Empty nickname", clt->getCltFd());
+        return 1;
+    }
+    if (!checkOneWord(nick) || nick[0] == '#' || nick[0] == ':')
+    {
+        sendIrcMessage(":@localhost 432 " + clt->getNick() + " :Erroneous nickname", clt->getCltFd());
+        return 1;
+    }
     if (nick == clt->getNick())
     {
-        sendIrcMessage(":@localhost 433 " + clt->getNick() + " :Nickname is use", clt->getCltFd());
+        // clt->setNick(nick);
+        sendIrcMessage(":@localhost 433 " + clt->getNick() + " :Nickname in use", clt->getCltFd());
         error_print("You cant assign the same nick");
         return 1;
     }
@@ -98,6 +107,9 @@ int Server::nickChecker(Client *clt, std::string nick)
     {
         if (nick == itClt->second->getNick())
         {
+            std::cout << "\n\nnicknames -> " << itClt->second->getNick() << std::endl;
+            if (clt->getNick().empty())
+                clt->setNick(nick);
             sendIrcMessage(":@localhost 433 " + clt->getNick() + " :Nickname is use", clt->getCltFd());
             error_print("Nick already exists");
             // Command::quit(_channels, _clients, pollfds, clt, clt->getCltFd());
@@ -111,6 +123,11 @@ int Server::nickChecker(Client *clt, std::string nick)
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
+    if (cmdValue.empty())
+    {
+        error_print("No Arguments in cmd");
+        return ;
+    }
     if (cmd.compare("QUIT") == 0)
     {
         Command::quit(_channels, _clients, clt, clt->getCltFd());
@@ -156,11 +173,11 @@ void Server::authProcess(Client *clt, char *fullCmd)
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
     std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-    if (cmdValue.empty())
-    {
-        error_print("No Arguments in cmd");
-        return ;
-    }
+    // if (cmdValue.empty())
+    // {
+    //     error_print("No Arguments in cmd");
+    //     return ;
+    // }
     if (cmd.compare("USER") == 0)
     {
         if (userChecker(clt, cmdValue) == 0)
