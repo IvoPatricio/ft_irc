@@ -339,9 +339,11 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
                 if (operatorList[i]->getNick() == clt->getNick())
                 {
                     std::cout << clt->getNick() << " is an operator" << std::endl;
-                    std::string message = "TOPIC " + channelName + " :" + remaining + "\r\n";
-                    //send irc for all
-                    sendIrcMessage(message, clt->getCltFd());
+                    std::map<int, Client*>::iterator it;
+                    for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+                    {
+                        sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
+                    }
                     return ;
                 }
             
