@@ -30,6 +30,10 @@ public:
     std::vector<Client*> &getMemberList();
     std::vector<Client*> &getOperatorList();
     std::string getChannelName();
+    std::string getChannelTopic();
+
+    //setters
+    void setChannelTopic(std::string topic);
 
     //mode getters&setters
     bool getInviteMode();

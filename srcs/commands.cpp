@@ -249,7 +249,7 @@ void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Cl
     close(fd);
 }
 
-void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std::string user)
+void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string user)
 {
     unsigned int x = 0;
 	unsigned int i = 0;
@@ -315,7 +315,7 @@ void Command::kick(std::map<std::string, Channel*> channelMap, Client *clt, std:
 }
 
 
-void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
+void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
 {
     std::cout << "topic" << std::endl;
     size_t Pos1 = user.find('#');
@@ -337,6 +337,7 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
                 std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
                 if (operatorList[i]->getNick() == clt->getNick())
                 {
+                    it->second->setChannelTopic(remaining);
                     std::cout << clt->getNick() << " is an operator" << std::endl;
                     std::map<int, Client*>::iterator it;
                     for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
@@ -355,10 +356,43 @@ void Command::topic(std::map<std::string, Channel*> channelMap, Client *clt, std
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 // {
 
-void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
+void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients)
 {
+    std::cout << "MODE\n\n\n\n" << std::endl;
+    std::cout << cmd << "\n\n" << std::endl;
+    size_t Pos1 = cmd.find('#');
+    size_t Pos2 = cmd.find(' ');
 
-    /*i: Set/remove Invite-only channel
+    std::string channelName = cmd.substr(Pos1, Pos2 - Pos1);
+    std::string remaining = cmd.substr(Pos2 + 1);
+    std::cout << channelName << "|" << remaining << std::endl;
+
+    std::map<std::string, Channel*>::iterator it;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        if (it->second->getChannelName() == channelName)
+        {
+            std::vector<Client*> operatorList = it->second->getOperatorList();
+            for (size_t i = 0; i < operatorList.size(); ++i)
+            {
+                if (operatorList[i]->getNick() == clt->getNick())
+                {
+                    std::cout << it->second->getChannelName() << " invite mode is: " << it->second->getInviteMode() << std::endl;
+                    if (remaining == "+i")
+                        it->second->setInviteMode(true);
+                    else if (remaining == "-i")
+                        it->second->setInviteMode(false);
+                    std::cout << it->second->getChannelName() << " invite mode set to: " << it->second->getInviteMode() << std::endl;
+                    return ;
+                }
+            }
+        }
+    }
+    error_print("Invalid MODE");
+    //i: Set/remove Invite-only channel
+
+    /*
+    i: Set/remove Invite-only channel
     · t: Set/remove the restrictions of the TOPIC command to channel
     operators
     · k: Set/remove the channel key (password)

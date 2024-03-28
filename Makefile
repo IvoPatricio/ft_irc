@@ -4,7 +4,7 @@ OBJ				= $(SRC:.cpp=.o)
 
 CC				= c++
 
-FLAGS			= -Wall -Wextra -Werror -fsanitize=address -g -std=c++98 
+FLAGS			= -fsanitize=address -g -std=c++98 
 
 NAME			= ircserv
 

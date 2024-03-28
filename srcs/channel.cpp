@@ -68,6 +68,16 @@ void Channel::removeOperator(Client *clt)
     }
 }
 
+std::string Channel::getChannelTopic()
+{
+    return _channelTopic;
+}
+
+void Channel::setChannelTopic(std::string topic)
+{
+    _channelTopic = topic;
+}
+
 std::vector<Client*>& Channel::getMemberList()
 {
     return _memberList;
