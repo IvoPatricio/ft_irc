@@ -28,6 +28,7 @@ public:
     void addOperator(Client *clt);
     void removeMember(Client *clt);
     void removeOperator(Client *clt);
+    void removeFdMember(int fd);
 
     // getters
     std::vector<Client*> &getMemberList();

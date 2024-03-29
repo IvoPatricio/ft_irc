@@ -272,45 +272,39 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
 		while (i < user.size() && (user[i] == ' ' || user[i] == '\r' || user[i] == '\n'))
 			i++;
 	}
-    std::cout << "\n\n" << x << "\n\n" << std::endl;
 	if (x != 2)
     {
 		error_print("Wrong KICK format. /kick #channel user_name");
 		return;
 	}
-    std::cout << "Kicking" << std::endl;
     size_t Pos1 = user.find(' ');
     size_t Pos2 = user.find(':');
 
     std::string channelName = user.substr(Pos1 + 1, Pos2 - Pos1 - 2);
     std::string remaining = user.substr(Pos2 + 1);
-
-    std::cout << "Channel Name: " << channelName << std::endl;
-    std::cout << "Remaining: " << remaining << std::endl;
-
-    std::cout << "\n\n" << remaining << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
         if (it->second->getChannelName() == channelName)
         {
             std::vector<Client*> operatorList = it->second->getOperatorList();
-            std::cout << "Operator List:" << std::endl;
             for (size_t i = 0; i < operatorList.size(); ++i)
             {
-                std::cout << "|OPERATOR|" << operatorList[i]->getNick() << clt->getNick() << "|OPERATOR|" << std::endl;
                 if (operatorList[i]->getNick() == clt->getNick())
                 {
-                    std::cout << clt->getNick() << " is an operator" << std::endl;
                     std::vector<Client*> memberList = it->second->getMemberList();
                     for (size_t i = 0; i < memberList.size(); ++i)
                     {
-                        std::cout << "|MEMBER|" << memberList[i]->getNick() << remaining << "|MEMBER|" << std::endl;
                         if (memberList[i]->getNick() == remaining)
                         {
-                            std::cout << remaining << " is a member channel" << std::endl;
                             sendIrcMessage(":" + clt->getNick() + " KICK " + channelName + " " + remaining + " (kicked)!:\r\n", memberList[i]->getCltFd());
-                            memberList.erase(memberList.begin() + i);
+                            channelMap[channelName]->removeMember(channelMap[channelName]->getMemberList()[i]);
+
+                            std::vector<Client*> MemberPrint = channelMap[channelName]->getMemberList();
+                            for (size_t i = 0; i < MemberPrint.size(); ++i) 
+                            {
+                                sendMembersToNewUser(channelMap[channelName], channelMap[channelName]->getMemberList()[i]);
+                            }
                             return ;
                         }
                     }
@@ -467,19 +461,17 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                                         if (memberList[i]->getNick() == remaining2)
                                         {
                                             it->second->addOperator(memberList[i]);
-                                            it->second->removeMember(memberList[i]);
                                             return ;
                                         }
                                     }
                                 }
                                 else if (remaining1 == "-o")
                                 {
-                                    std::vector<Client*> operatorList = it->second->getMemberList();
+                                    std::vector<Client*> operatorList = it->second->getOperatorList();
                                     for (size_t i = 0; i < operatorList.size(); ++i)
                                     {
                                         if (operatorList[i]->getNick() == remaining2)
                                         {
-                                            it->second->addMember(operatorList[i]);
                                             it->second->removeOperator(operatorList[i]);
                                             return ;
                                         }
@@ -494,12 +486,4 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
         }
     }
     error_print("Invalid MODE");
-    //i: Set/remove Invite-only channel
-
-    /*
-    i: Set/remove Invite-only channel
-    · t: Set/remove the restrictions of the TOPIC command to channel
-    operators
-    · k: Set/remove the channel key (password)
-    · o: Give/take channel operator privilege*/
 }
