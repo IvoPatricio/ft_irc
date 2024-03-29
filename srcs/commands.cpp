@@ -337,6 +337,7 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
                             std::vector<Client*> MemberPrint = channelMap[channelName]->getMemberList();
                             for (size_t i = 0; i < MemberPrint.size(); ++i) 
                             {
+                                sendIrcMessage(":" + clt->getNick() + "!localhost KICK " + channelName + " " + remaining, channelMap[channelName]->getMemberList()[i]->getCltFd());
                                 sendMembersToNewUser(channelMap[channelName], channelMap[channelName]->getMemberList()[i]);
                             }
                             return ;
