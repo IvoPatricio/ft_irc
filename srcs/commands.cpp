@@ -461,6 +461,11 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                                         if (memberList[i]->getNick() == remaining2)
                                         {
                                             it->second->addOperator(memberList[i]);
+                                            std::vector<Client*> MemberPrint = channelMap[channelName]->getMemberList();
+                                            for (size_t i = 0; i < MemberPrint.size(); ++i) 
+                                            {
+                                                sendMembersToNewUser(channelMap[channelName], channelMap[channelName]->getMemberList()[i]);
+                                            }
                                             return ;
                                         }
                                     }
@@ -473,6 +478,11 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                                         if (operatorList[i]->getNick() == remaining2)
                                         {
                                             it->second->removeOperator(operatorList[i]);
+                                            std::vector<Client*> MemberPrint = channelMap[channelName]->getMemberList();
+                                            for (size_t i = 0; i < MemberPrint.size(); ++i) 
+                                            {
+                                                sendMembersToNewUser(channelMap[channelName], channelMap[channelName]->getMemberList()[i]);
+                                            }
                                             return ;
                                         }
                                     }
