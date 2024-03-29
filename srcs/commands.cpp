@@ -219,6 +219,14 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
     if (channelMap.find(channelName) != channelMap.end())
     {
+        if(channelMap[channelName]->getLimitMode() == true)
+        {
+            if (channelMap[channelName]->getMemberList().size() >= channelMap[channelName]->getLimitUsers())
+            {
+                sendIrcMessage(":@localhost 471 " + clt->getNick() + " " + channelName + " :Cannot join channel (+l)",  clt->getCltFd());
+                return ;
+            }
+        }
         if (!channelMap[channelName]->getInviteMode())
         {
             if (channelMap[channelName]->getPasswordMode())

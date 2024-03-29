@@ -44,14 +44,16 @@ public:
     void setChannelPassword(std::string password);
     void setLimitUsers(int limit);
     void setLimitMode(bool value);
+    void setInviteMode(bool value);
+    void setTopicMode(bool value);
+    void setPasswordMode(bool value);
 
     //mode getters&setters
     bool getInviteMode();
     bool getTopicMode();
     bool getPasswordMode();
-    void setInviteMode(bool value);
-    void setTopicMode(bool value);
-    void setPasswordMode(bool value);
+    bool getLimitMode();
+    int getLimitUsers();
 
 };
 

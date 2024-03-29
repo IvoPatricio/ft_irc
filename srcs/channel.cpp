@@ -83,6 +83,16 @@ void Channel::removeOperator(Client *clt)
     }
 }
 
+bool Channel::getLimitMode()
+{
+    return _limitMode;
+}
+
+int Channel::getLimitUsers()
+{
+    return _userLimit;
+}
+
 std::string Channel::getChannelTopic()
 {
     return _channelTopic;
