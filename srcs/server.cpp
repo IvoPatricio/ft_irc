@@ -197,7 +197,14 @@ void Server::authProcess(Client *clt, char *fullCmd)
             Command::nick(_channels, clt, cmdValue);
     }
     else
-        executeCmd(clt, cmd, cmdValue);
+    {
+        if (!clt->getUserDef())
+            sendIrcMessage(":@localhost 451 " + clt->getNick() + " :User not registered" , clt->getCltFd());
+        else if (!clt->getNickDef())
+            sendIrcMessage(":@localhost 431 " + clt->getNick() + " :No nickname given" , clt->getCltFd());
+        else
+            executeCmd(clt, cmd, cmdValue);
+    }
 }
 
 void Server::AddClients()
@@ -233,6 +240,7 @@ void Server::parseInitialMsg(int fd, char* fullCmd)
             password1.erase(password1.size() - 1);
             if (getPassword() != password1)
             {
+                sendIrcMessage(":@localhost 464 " + _clients[fd]->getNick() + " :Password incorrect" , _clients[fd]->getCltFd());
                 error_print("PASSWORD");
                 std::cout << "Client_" << fd << ": auth failed" << std::endl;
                 close(fd);
@@ -240,6 +248,7 @@ void Server::parseInitialMsg(int fd, char* fullCmd)
             }
             else
             {
+                Command::password(_clients[fd], password1, _password);
                 success_print("PASSWORD");
             }
         }
@@ -252,10 +261,13 @@ void Server::parseInitialMsg(int fd, char* fullCmd)
             authProcess(_clients[fd], nickBuffer);
             delete[] nickBuffer;
         }
+        // std::cout << "FULLCMD-> " << line << std::endl;
         size_t pos3 = line.find(" 0 * :realname");
+        // std::cout << "pos3-> " << pos3 << std::endl;
         if (pos3 != std::string::npos)
         {
             std::string user1 = line.substr(0, pos3);
+            // std::cout << "user1-> " << user1 << std::endl;
             char* userBuffer = new char[user1.length() + 1];
             std::strcpy(userBuffer, user1.c_str());
             authProcess(_clients[fd], userBuffer);

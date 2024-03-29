@@ -142,14 +142,27 @@ void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, 
         if (channelMap.find(msg[0]) != channelMap.end())
         {
             //channel exists
-            // sendIrcMessage("PRIVMSG " + msg[0], ->getCltFd());
-            msg[1].erase(msg[1].begin());
-            sendToAllInChannel(cltSend, channelMap[msg[0]]->getMemberList(), msg[1], msg[0]);
-            // sendChannelMessage(":" + cltSend->getNick() + " PRIVMSG " + msg[0] + " :" + msg[1], it->second->getCltFd());
+            for (size_t i = 0; i < channelMap[msg[0]]->getMemberList().size(); i++)
+            {
+                if (cltSend->getNick() == channelMap[msg[0]]->getMemberList()[i]->getNick())
+                {
+                    if (msg[1][0] != ':')
+                    {
+                        sendToAllInChannel(cltSend, channelMap[msg[0]]->getMemberList(), msg[1], msg[0]);
+                    }
+                    else
+                    {
+                        msg[1].erase(msg[1].begin());
+                        sendToAllInChannel(cltSend, channelMap[msg[0]]->getMemberList(), msg[1], msg[0]);
+                    }
+                    return ;
+                }
+            }
+            sendIrcMessage(":@localhost 404 " + cltSend->getNick() + " " + msg[0] + " :You are not in channel", cltSend->getCltFd());
         }
         else
         {
-            // does not exist
+            sendIrcMessage(":@localhost 403 " + cltSend->getNick() + " " + msg[0] + " :Invalid channel name.", cltSend->getCltFd());
         }
     }
     std::map<int, Client*>::iterator it;
