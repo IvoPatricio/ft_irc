@@ -18,6 +18,7 @@ private:
     bool                    _limitMode;
     std::vector<Client*>    _memberList;
     std::vector<Client*>    _operatorList;
+    std::vector<Client*>    _inviteList;
     int                     _userLimit;
 
 public:
@@ -26,12 +27,14 @@ public:
 
     void addMember(Client *clt);
     void addOperator(Client *clt);
+    void addInviteList(Client *clt);
     void removeMember(Client *clt);
     void removeOperator(Client *clt);
 
     // getters
     std::vector<Client*> &getMemberList();
     std::vector<Client*> &getOperatorList();
+    std::vector<Client*> &getInviteList();
     std::string getChannelName();
     std::string getChannelTopic();
     std::string getChannelPassword();

@@ -22,6 +22,7 @@ void Command::password(Client *clt, std::string insertPassword, std::string svPa
         clt->authenticate();
     else
     {
+        sendIrcMessage(":@localhost 464 " + clt->getNick() + " :Password incorrect" , clt->getCltFd());
         error_print("Wrong Password");
     }
 }
@@ -220,6 +221,14 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
         }
         else
         {
+            for (size_t i = 0; i < channelMap[channelName]->getInviteList().size(); i++)
+            {
+                if (clt->getNick() == channelMap[channelName]->getInviteList()[i]->getNick())
+                {
+                    joinExistinChannel(channelMap[channelName], clt, channelName);
+                    return ;
+                }
+            }
             sendIrcMessage(":@localhost 473 " + clt->getNick() + " " + channelName + " :Invite only channel", clt->getCltFd());
         }
     }
@@ -472,7 +481,11 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
                                 std::string nickname = it->second->getNick();
                                 if (it->second->getNick() == nick)
                                 {
-                                    it->second->setInvitePerm(1);
+                                    channelMap[channelName]->addInviteList(it->second);
+                                    // for (size_t i = 0; i < channelMap[channelName]->getInviteList().size(); i++)
+                                    // {
+                                    //     std::cout << "NAMES INV -> " << channelMap[channelName]->getInviteList()[i]->getNick() << std::endl;
+                                    // }
                                     sendIrcMessage(clt->getNick() + " invited you to join " + channelName, it->second->getCltFd());
                                     sendIrcMessage(":@localhost 341 " + clt->getNick() + " " + nick + " " + channelName, clt->getCltFd());
                                     return ;

@@ -45,6 +45,20 @@ void Channel::addOperator(Client *clt)
     std::cout << "You are a operator now" << std::endl;
 }
 
+void Channel::addInviteList(Client *clt)
+{
+    for (size_t i = 0; i < _inviteList.size(); i++)
+    {
+        if (_inviteList[i] == clt)
+        {
+            error_print("You are already invited");
+            return ;
+        }
+    }
+    _inviteList.push_back(clt);
+    std::cout << "You are invited now" << std::endl;
+}
+
 void Channel::removeMember(Client *clt)
 {
     for (size_t i = 0; i < _memberList.size(); i++)
@@ -87,6 +101,11 @@ std::vector<Client*>& Channel::getMemberList()
 std::vector<Client*>& Channel::getOperatorList()
 {
     return _operatorList;
+}
+
+std::vector<Client*>& Channel::getInviteList()
+{
+    return _inviteList;
 }
 
 std::string Channel::getChannelName()

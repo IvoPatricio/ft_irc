@@ -131,7 +131,6 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }*/
     if (cmd.compare("QUIT") == 0)
     {
-        std::cout << "entrou" << std::endl;
         Command::quit(_channels, _clients, clt, clt->getCltFd());
     }
     else if (cmd.compare("PRIVMSG") == 0)
@@ -175,12 +174,19 @@ void Server::authProcess(Client *clt, char *fullCmd)
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
     std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
-    // if (cmdValue.empty())
-    // {
-    //     error_print("No Arguments in cmd");
-    //     return ;
-    // }
-    if (cmd.compare("USER") == 0)
+    if (cmd.compare("PASS") != 0 && !clt->getAuth())
+    {
+        sendIrcMessage(":@localhost 451 " + clt->getNick() + " :You have not registered" , clt->getCltFd());
+        return ;
+    }
+    if (cmd.compare("PASS") == 0)
+    {
+        if (clt->getAuth())
+            sendIrcMessage(":@localhost 462 " + clt->getNick() + " :Already registered" , clt->getCltFd());
+        else
+            Command::password(clt, cmdValue, _password);
+        }
+    else if (cmd.compare("USER") == 0)
     {
         if (userChecker(clt, cmdValue) == 0)
             Command::username(clt, cmdValue);
