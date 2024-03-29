@@ -445,9 +445,6 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
     std::string nick, channelName;
     nick = cmd.substr(0, Pos1);
     channelName = cmd.substr(Pos1 + 1);
-
-    std::cout << "Nickname: " << nick << std::endl;
-    std::cout << "Channel: " << channelName << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
@@ -463,7 +460,6 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
                         std::cout << "|" << nick << "|" << memberList[i]->getNick() << "|" << std::endl;
                         if (memberList[i]->getNick() == nick)
                         {
-                            std::cout << nick << " :is already on channel" << std::endl;
                             sendIrcMessage(":@localhost 443 " + clt->getNick() + " " + nick + " " + channelName + " :is already on channel", clt->getCltFd());
                             return ;
                         }
@@ -473,10 +469,10 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
                             for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) 
                             {
                                 std::string nickname = it->second->getNick();
-                                std::cout << "Client Nickname: " << nickname << std::endl;
                                 if (it->second->getNick() == nick)
                                 {
-                                    std::cout << "INVITE TO CHANNEL" << std::endl;
+                                    sendIrcMessage(clt->getNick() + " invited you to join " + channelName, it->second->getCltFd());
+                                    sendIrcMessage(":@localhost 341 " + clt->getNick() + " " + nick + " " + channelName, clt->getCltFd());
                                     return ;
                                 }
                             }
@@ -485,8 +481,7 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
                 }
                 if ((i + 1) == memberList.size())
                 {
-                    std::cout << clt->getNick() << " :Youre not on that channel" << std::endl;
-                    sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
+                    sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " " + nick + " :client not found", clt->getCltFd());
                     return ;
                 }
             }
