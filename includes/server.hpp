@@ -37,7 +37,7 @@ class Server
 private:
     int _port;
     std::string _password;
-    bool _running;
+    static bool _running;
 
     std::map<int, Client*> _clients;
     std::map<std::string, Channel*> _channels;

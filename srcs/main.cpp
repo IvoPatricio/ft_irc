@@ -65,6 +65,7 @@ int main(int argc, char **argv)
 
     Server ServerObj = Server(atoi(argv[1]), argv[2]);
     ServerObj.ServerStartUp();
+    std::cout << "finished \n\n" << std::endl;
 
     return 0;
     

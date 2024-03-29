@@ -1,6 +1,8 @@
 #include "../includes/server.hpp"
 
-Server::Server(int port, std::string password) : _port(port), _password(password), _clients(), pollfds(), _server_socket(), _running(true)
+bool Server::_running = true;
+
+Server::Server(int port, std::string password) : _port(port), _password(password), _clients(), pollfds(), _server_socket()
 {
     std::cout << "+Server Constructor called" << std::endl;
     _running = true;
@@ -232,7 +234,7 @@ void Server::AddClients()
         Client *client = new Client(_client_socket);
         std::cout << "Add client fd -> " << _client_socket << std::endl;
 	    _clients[_client_socket] = client;
-		this->pollfds.push_back((pollfd){_client_socket, POLLIN, 0});
+		pollfds.push_back((pollfd){_client_socket, POLLIN, 0});
     }
 }
 
@@ -301,7 +303,7 @@ void Server::signalHandler(int signal)
     if (signal == SIGINT) 
     {
         std::cout << "Received SIGINT. Stopping server..." << std::endl;
-        exit(0);
+        _running = 0;
     }
 }
 
