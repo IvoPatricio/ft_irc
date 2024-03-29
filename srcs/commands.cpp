@@ -301,16 +301,16 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
 		while (i < user.size() && (user[i] == ' ' || user[i] == '\r' || user[i] == '\n'))
 			i++;
 	}
-	if (x != 2)
-    {
-		error_print("Wrong KICK format. /kick #channel user_name");
-		return;
-	}
     size_t Pos1 = user.find(' ');
     size_t Pos2 = user.find(':');
 
     std::string channelName = user.substr(Pos1 + 1, Pos2 - Pos1 - 2);
     std::string remaining = user.substr(Pos2 + 1);
+    if (x != 2)
+    {
+        sendIrcMessage(":@localhost 461 " + clt->getNick() + " " + user + " :Not enough parameters", clt->getCltFd());
+		return;
+	}
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
@@ -336,24 +336,40 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
                             }
                             return ;
                         }
+                        if (i == memberList.size())
+                        {
+                            sendIrcMessage(":@localhost 441 " + clt->getNick() + " " + remaining + " " + channelName + " :They aren't on that channel", clt->getCltFd());
+		                    return;
+                        }
+
                     }
+                }
+                if (i == operatorList.size())
+                {
+                    sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
+		            return;
                 }
             }
         }
     }
-    error_print("Invalid KICK");
+    sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :No such channel", clt->getCltFd());
+    return ;
 }
 
 
 void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string user, std::map<int, Client*> _clients)
 {
-    std::cout << "topic" << std::endl;
     size_t Pos1 = user.find('#');
     size_t Pos2 = user.find(':');
 
+    if (Pos1 == std::string::npos || Pos2 == std::string::npos) 
+    {
+        sendIrcMessage(":@localhost 461 " + clt->getNick() + " :Not enough parameters", clt->getCltFd());
+        return ;
+    }
+
     std::string channelName = user.substr(Pos1, Pos2 - Pos1 - 1);
     std::string remaining = user.substr(Pos2 + 1);
-    std::cout << channelName << "|" << remaining << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
@@ -374,6 +390,12 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
                         }
                         return ;
                     }
+                    if (i == operatorList.size())
+                    {
+                        sendIrcMessage(":@localhost 482 " + clt->getNick() + " " + channelName + " :You're not channel operator", clt->getCltFd());
+                        return ;
+                    }
+
                 }
             }
             else if (it->second->getTopicMode() == false)
@@ -391,25 +413,17 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
                         }
                         return ;
                     }
-                }
-                std::vector<Client*> operatorList = it->second->getOperatorList();
-                for (size_t i = 0; i < operatorList.size(); ++i)
-                {
-                    if (operatorList[i]->getNick() == clt->getNick())
+                    if (i == memberList.size())
                     {
-                        it->second->setChannelTopic(remaining);
-                        std::map<int, Client*>::iterator it;
-                        for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-                        {
-                            sendIrcMessage(":" + clt->getNick() + " TOPIC " + channelName + " " + remaining + "\r\n", it->second->getCltFd());
-                        }
+                        sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
                         return ;
                     }
                 }
             }
         }
     }
-    error_print("Invalid TOPIC");
+    sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :No such channel", clt->getCltFd());
+    return ;
 }
 
 // void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
@@ -438,10 +452,9 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
     }
     else
     {
-        error_print("Invalid MODE");
+        sendIrcMessage(":@localhost 482 " + clt->getNick() + " " + cmd + " :is unknown mode char to me", clt->getCltFd());
         return ;
     }
-    std::cout << channelName << "|" << remaining1 << "|" << remaining2 << std::endl;
     std::map<std::string, Channel*>::iterator it;
     for (it = channelMap.begin(); it != channelMap.end(); ++it)
     {
@@ -521,8 +534,14 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                     }
                     return ;
                 }
+                if (i == operatorList.size())
+                {
+                    sendIrcMessage(":@localhost 482 " + clt->getNick() + " " + channelName + " :You're not channel operator", clt->getCltFd());
+                    return ;
+                }
             }
         }
     }
-    error_print("Invalid MODE");
+    sendIrcMessage(":@localhost 485 " + clt->getNick() + " " + channelName + " :Cannot change mode due to channel restrictions", clt->getCltFd());
+    return ;
 }
