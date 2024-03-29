@@ -14,13 +14,11 @@ Server::~Server()
     for (itClt = _clients.begin(); itClt != _clients.end(); ++itClt)
     {
         delete itClt->second;
-        _clients.erase(itClt);
     }
     std::map<std::string, Channel*>::iterator itChannel;
     for (itChannel = _channels.begin(); itChannel != _channels.end(); ++itChannel)
     {
         delete itChannel->second;
-        _channels.erase(itChannel);
     }
     close(_server_socket);
     std::cout << "Server shutting down" << std::endl;
@@ -296,9 +294,7 @@ void Server::signalHandler(int signal)
     if (signal == SIGINT) 
     {
         std::cout << "Received SIGINT. Stopping server..." << std::endl;
-        std::cout << "_running" << _running << std::endl;
         _running = 0;
-        std::cout << "_running" << _running << std::endl;
     }
 }
 
