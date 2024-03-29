@@ -158,7 +158,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("MODE") == 0)
     {
-        Command::mode(_channels, clt, cmdValue, _clients);
+        Command::mode(_channels, clt, cmdValue);
     }
 }
 

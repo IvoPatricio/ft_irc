@@ -529,7 +529,7 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
     return ;
 }
 
-void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients)
+void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
 {
     size_t Pos1 = cmd.find('#');
     size_t Pos2 = cmd.find(' ', Pos1 + 1);

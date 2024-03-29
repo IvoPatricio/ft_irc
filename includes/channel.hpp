@@ -10,16 +10,16 @@ class Channel
 private:
     std::string             _channelName;
     std::string             _channelPassword;
+    bool                    _limitMode;
     std::string             _channelTopic;
     std::string             _password;
+    int                     _userLimit;
     bool                    _inviteMode;
     bool                    _topicMode;
     bool                    _passwordMode;
-    bool                    _limitMode;
     std::vector<Client*>    _memberList;
     std::vector<Client*>    _operatorList;
     std::vector<Client*>    _inviteList;
-    int                     _userLimit;
 
 public:
     Channel(std::string channelName, Client *clt);
@@ -53,7 +53,7 @@ public:
     bool getTopicMode();
     bool getPasswordMode();
     bool getLimitMode();
-    int getLimitUsers();
+    size_t getLimitUsers();
 
 };
 

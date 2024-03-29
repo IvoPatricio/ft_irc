@@ -1,15 +1,15 @@
 #include "../includes/channel.hpp"
 
 Channel::Channel(std::string channelName, Client *clt)
-    : _channelName(channelName), _channelPassword(""), _channelTopic(""), _password(""), _userLimit(0),
-    _inviteMode(false), _topicMode(false), _passwordMode(false), _limitMode(false)
+    : _channelName(channelName), _channelPassword(""), _limitMode(false), _channelTopic(""), _password(""), _userLimit(0),
+    _inviteMode(false), _topicMode(false), _passwordMode(false)
 {
     _memberList.push_back(clt);
     _operatorList.push_back(clt);
     _inviteMode = false;
+    _limitMode = false;
     _topicMode = false;
     _passwordMode = false;
-    _limitMode = false;
 }
 
 Channel::~Channel()
@@ -88,9 +88,9 @@ bool Channel::getLimitMode()
     return _limitMode;
 }
 
-int Channel::getLimitUsers()
+size_t Channel::getLimitUsers()
 {
-    return _userLimit;
+    return static_cast<size_t>(_userLimit);
 }
 
 std::string Channel::getChannelTopic()
