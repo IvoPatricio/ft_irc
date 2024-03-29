@@ -94,6 +94,11 @@ std::string Channel::getChannelName()
     return _channelName;
 }
 
+std::string Channel::getChannelPassword()
+{
+    return _password;
+}
+
 void Channel::setChannelPassword(std::string password)
 {
     _password = password;

@@ -173,27 +173,56 @@ void Command::privMsg(std::map<std::string, Channel*> channelMap, std::map<int, 
     }
 }
 
-// usage -> /JOIN [channeName]
-void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelName)
+std::string getChannelPassword(std::string str)
 {
+    std::string channelPassword = "";
+    size_t firstSpace = str.find_first_of(" ");
+    size_t firstCharSecondWord = str.find_first_not_of(" ", firstSpace);
+    if (firstCharSecondWord == std::string::npos)
+        return "";
+    size_t lastChar = str.find_last_not_of(" ");
+    channelPassword = str.substr(firstCharSecondWord, lastChar);
+    return channelPassword;
+}
+
+void joinExistinChannel(Channel *channel, Client *clt, std::string channelName)
+{
+    channel->addMember(clt);
+    sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channel->getMemberList());
+    sendIrcMessage(":@localhost 332 " + clt->getNick() + " " + channelName + " :" + channel->getChannelTopic(), clt->getCltFd());
+    sendMembersToNewUser(channel, clt);
+}
+
+// usage -> /JOIN [channeName]
+void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelNameAndPassword)
+{
+    std::string channelName = channelNameAndPassword.substr(0, channelNameAndPassword.find_first_of(" ") - 1);
+    std::string channelPassword = getChannelPassword(channelNameAndPassword);
     if(channelName[0] != '#')
     {
         sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :Invalid channel name. Channel has to start with '#'", clt->getCltFd());
         return ;
     }
-    if (!checkOneWord(channelName))
-    {
-        sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :Bad channel name", clt->getCltFd());
-        error_print("Channel name has to be one word!");
-        return ;
-    }
     if (channelMap.find(channelName) != channelMap.end())
     {
-        //channel exists
-        channelMap[channelName]->addMember(clt);
-        sendChannelMessage(":" + clt->getNick() + "!" + clt->getUser() + "@localhost" + " JOIN " + channelName, channelMap[channelName]->getMemberList());
-        sendIrcMessage(":@localhost 332 " + clt->getNick() + " " + channelName + " :" + channelMap[channelName]->getChannelTopic(), clt->getCltFd());
-        sendMembersToNewUser(channelMap[channelName], clt);
+        if (!channelMap[channelName]->getInviteMode())
+        {
+            if (channelMap[channelName]->getPasswordMode())
+            {
+                // has password
+                if (channelPassword != channelMap[channelName]->getChannelPassword())
+                {
+                    sendIrcMessage(":@localhost 475 " + clt->getNick() + " " + channelName + " :Bad channel password", clt->getCltFd());
+                    return ;
+                }
+            }    
+            joinExistinChannel(channelMap[channelName], clt, channelName);
+        }
+        else
+        {
+            //invite mode
+            sendIrcMessage(":@localhost 473 " + clt->getNick() + " " + channelName + " :Invite only channel", clt->getCltFd());
+        }
     }
     else
     {

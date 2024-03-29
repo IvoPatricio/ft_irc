@@ -34,6 +34,7 @@ public:
     std::vector<Client*> &getOperatorList();
     std::string getChannelName();
     std::string getChannelTopic();
+    std::string getChannelPassword();
 
     //setters
     void setChannelTopic(std::string topic);
