@@ -286,6 +286,7 @@ void Server::signalHandler(int signal)
 int Server::ServerStartUp()
 {
     char buf[BUFFER_SIZE];
+    char* charPointer;
 
     signal(SIGINT, signalHandler);
     std::cout << YELLOW << "Server is running on the port: " << RESET << getPort() << std::endl;
@@ -310,18 +311,24 @@ int Server::ServerStartUp()
 					AddClients();
 					break ;
 				}
-	            if(recv(pollfds[i].fd, buf, BUFFER_SIZE, 0) == -1)
-	            {
-	            	std::cerr << "Buffer Error" << std::endl;
-	            }
+                std::string message;
+                bzero(buf, 100);
+                while (!strstr(buf, "\n"))
+                {
+                    bzero(buf, 100);
+                    if ((recv(pollfds[i].fd, buf, 100, 0) < 0) and (errno != EWOULDBLOCK))
+                        return 1;
+                    message.append(buf);
+                }
+                charPointer = const_cast<char*>(message.c_str());
                 if (pollfds[i].fd != 3)
                 {
                     if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )))
-                        parseInitialMsg(pollfds[i].fd, buf);
+                        parseInitialMsg(pollfds[i].fd, charPointer);
                     else
                     {
                         std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
-                        authProcess(_clients[pollfds[i].fd], buf);
+                        authProcess(_clients[pollfds[i].fd], charPointer);
                     }
                 }
                 memset(buf, 0, BUFFER_SIZE);
