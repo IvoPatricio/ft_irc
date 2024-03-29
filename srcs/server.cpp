@@ -155,7 +155,7 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     }
     else if (cmd.compare("INVITE") == 0)
     {
-
+        Command::invite(_channels, clt, cmdValue, _clients);
     }
     else if (cmd.compare("MODE") == 0)
     {

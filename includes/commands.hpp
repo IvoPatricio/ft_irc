@@ -35,7 +35,7 @@ public:
     static void kick(std::map<std::string, Channel*> &channelMap, Client *clt, std::string user);
     static void topic(std::map<std::string, Channel*> &channelMap, Client *clt, std::string user, std::map<int, Client*> _clients);
 
-    static void invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd);
+    static void invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients);
     static void mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients);
 
 };

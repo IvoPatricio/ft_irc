@@ -304,6 +304,11 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
     size_t Pos1 = user.find(' ');
     size_t Pos2 = user.find(':');
 
+    if (Pos1 == std::string::npos || Pos2 == std::string::npos)
+    {
+        sendIrcMessage(":@localhost 461 " + clt->getNick() + " " + user + " :Not enough parameters", clt->getCltFd());
+		return;
+    }
     std::string channelName = user.substr(Pos1 + 1, Pos2 - Pos1 - 2);
     std::string remaining = user.substr(Pos2 + 1);
     if (x != 2)
@@ -336,7 +341,7 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
                             }
                             return ;
                         }
-                        if (i == memberList.size())
+                        if ((i + 1) == memberList.size())
                         {
                             sendIrcMessage(":@localhost 441 " + clt->getNick() + " " + remaining + " " + channelName + " :They aren't on that channel", clt->getCltFd());
 		                    return;
@@ -344,7 +349,7 @@ void Command::kick(std::map<std::string, Channel*> &channelMap, Client *clt, std
 
                     }
                 }
-                if (i == operatorList.size())
+                if ((i + 1) == operatorList.size())
                 {
                     sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
 		            return;
@@ -390,7 +395,7 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
                         }
                         return ;
                     }
-                    if (i == operatorList.size())
+                    if ((i + 1) == operatorList.size())
                     {
                         sendIrcMessage(":@localhost 482 " + clt->getNick() + " " + channelName + " :You're not channel operator", clt->getCltFd());
                         return ;
@@ -413,7 +418,7 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
                         }
                         return ;
                     }
-                    if (i == memberList.size())
+                    if ((i + 1) == memberList.size())
                     {
                         sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
                         return ;
@@ -426,8 +431,70 @@ void Command::topic(std::map<std::string, Channel*> &channelMap, Client *clt, st
     return ;
 }
 
-// void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd)
-// {
+void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients)
+{
+    size_t Pos1 = cmd.find(' ');
+    size_t Pos2 = cmd.find('#', Pos1);
+
+
+    if (Pos1 == std::string::npos || Pos2 == std::string::npos)
+    {
+        sendIrcMessage(":@localhost 461 " + clt->getNick() + " " + cmd + " :Not enough parameters", clt->getCltFd());
+		return;
+    }
+    std::string nick, channelName;
+    nick = cmd.substr(0, Pos1);
+    channelName = cmd.substr(Pos1 + 1);
+
+    std::cout << "Nickname: " << nick << std::endl;
+    std::cout << "Channel: " << channelName << std::endl;
+    std::map<std::string, Channel*>::iterator it;
+    for (it = channelMap.begin(); it != channelMap.end(); ++it)
+    {
+        if (it->second->getChannelName() == channelName)
+        {
+            std::vector<Client*> memberList = it->second->getMemberList();
+            for (size_t i = 0; i < memberList.size(); ++i)
+            {
+                if (memberList[i]->getNick() == clt->getNick())
+                {
+                    for (size_t i = 0; i < memberList.size(); ++i)
+                    {
+                        std::cout << "|" << nick << "|" << memberList[i]->getNick() << "|" << std::endl;
+                        if (memberList[i]->getNick() == nick)
+                        {
+                            std::cout << nick << " :is already on channel" << std::endl;
+                            sendIrcMessage(":@localhost 443 " + clt->getNick() + " " + nick + " " + channelName + " :is already on channel", clt->getCltFd());
+                            return ;
+                        }
+                        std::cout << i << memberList.size() << std::endl;
+                        if ((i + 1) == memberList.size())
+                        {
+                            for (std::map<int, Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) 
+                            {
+                                std::string nickname = it->second->getNick();
+                                std::cout << "Client Nickname: " << nickname << std::endl;
+                                if (it->second->getNick() == nick)
+                                {
+                                    std::cout << "INVITE TO CHANNEL" << std::endl;
+                                    return ;
+                                }
+                            }
+                        }
+                    }
+                }
+                if ((i + 1) == memberList.size())
+                {
+                    std::cout << clt->getNick() << " :Youre not on that channel" << std::endl;
+                    sendIrcMessage(":@localhost 442 " + clt->getNick() + " " + channelName + " :You're not on that channel", clt->getCltFd());
+                    return ;
+                }
+            }
+        }
+    }
+    sendIrcMessage(":@localhost 403 " + clt->getNick() + " " + channelName + " :No such channel", clt->getCltFd());
+    return ;
+}
 
 void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std::string cmd, std::map<int, Client*> _clients)
 {
@@ -534,7 +601,7 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                     }
                     return ;
                 }
-                if (i == operatorList.size())
+                if ((i + 1) == operatorList.size())
                 {
                     sendIrcMessage(":@localhost 482 " + clt->getNick() + " " + channelName + " :You're not channel operator", clt->getCltFd());
                     return ;
