@@ -306,6 +306,7 @@ void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Clie
 
 void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, Client *clt, int fd)
 {
+    std::cout << "exit !" << std::endl;
     sendIrcMessage(":" + clt->getNick() + "!@localhost QUIT :Quit: Bye for now!" , clt->getCltFd());
     removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);

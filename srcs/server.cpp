@@ -125,7 +125,6 @@ int Server::nickChecker(Client *clt, std::string nick)
 // TODO: change func to commands
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
-    std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
     /*if (cmdValue.empty())
     {
         error_print("No Arguments in cmd");
@@ -163,10 +162,6 @@ void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
     {
         Command::mode(_channels, clt, cmdValue, _clients);
     }
-    else
-    {
-        error_print("Cmd does not exist");
-    }
 }
 
 void Server::authProcess(Client *clt, char *fullCmd)
@@ -175,7 +170,6 @@ void Server::authProcess(Client *clt, char *fullCmd)
         return ;
     std::string cmd = getCmd(fullCmd);
     std::string cmdValue = getCmdValue(fullCmd);
-    std::cout << "cmd ->" << cmd << ". | cmdValue ->" << cmdValue << ".\n";
     if (cmd.compare("PASS") != 0 && !clt->getAuth())
     {
         sendIrcMessage(":@localhost 451 " + clt->getNick() + " :You have not registered" , clt->getCltFd());
@@ -242,7 +236,6 @@ void Server::parseInitialMsg(int fd, char* fullCmd)
 {
     std::istringstream bufferStream(fullCmd);
     std::string line;
-    //std::cout << "\n\n------" << bufferStream << "\n\n-----------" << std::endl;
     while (std::getline(bufferStream, line)) 
     {
         size_t pos1 = line.find("PASS ");
@@ -303,7 +296,9 @@ void Server::signalHandler(int signal)
     if (signal == SIGINT) 
     {
         std::cout << "Received SIGINT. Stopping server..." << std::endl;
+        std::cout << "_running" << _running << std::endl;
         _running = 0;
+        std::cout << "_running" << _running << std::endl;
     }
 }
 
@@ -340,8 +335,11 @@ int Server::ServerStartUp()
                 while (!strstr(buf, "\n"))
                 {
                     bzero(buf, 100);
-                    if ((recv(pollfds[i].fd, buf, 100, 0) < 0) and (errno != EWOULDBLOCK))
-                        return 1;
+                    if ((recv(pollfds[i].fd, buf, 100, 0) <= 0) and (errno != EWOULDBLOCK))
+                    {
+                        break ;
+                    }
+                    std::cout << buf << std::endl;
                     message.append(buf);
                 }
                 charPointer = const_cast<char*>(message.c_str());
@@ -351,7 +349,6 @@ int Server::ServerStartUp()
                         parseInitialMsg(pollfds[i].fd, charPointer);
                     else
                     {
-                        std::cout << "EXECUTE CMD NOT INITIAL" << std::endl;
                         authProcess(_clients[pollfds[i].fd], charPointer);
                     }
                 }

@@ -3,7 +3,7 @@
 Client::Client(int client_fd) : _client_fd(client_fd),
     _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _invitePerm(false), _nick(""), _username("")
 {
-    std::cout << "Client created" << std::endl;
+    //std::cout << "Client created" << std::endl;
     _firstAuth = 1;
     _invitePerm = false;
 }

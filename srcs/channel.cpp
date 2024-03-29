@@ -28,7 +28,7 @@ void Channel::addMember(Client *clt)
         }
     }
     _memberList.push_back(clt);
-    std::cout << "You joined the " << _channelName << " channel" << std::endl;
+    //std::cout << "You joined the " << _channelName << " channel" << std::endl;
 }
 
 void Channel::addOperator(Client *clt)
@@ -42,7 +42,7 @@ void Channel::addOperator(Client *clt)
         }
     }
     _operatorList.push_back(clt);
-    std::cout << "You are a operator now" << std::endl;
+    //std::cout << "You are a operator now" << std::endl;
 }
 
 void Channel::addInviteList(Client *clt)
@@ -56,7 +56,7 @@ void Channel::addInviteList(Client *clt)
         }
     }
     _inviteList.push_back(clt);
-    std::cout << "You are invited now" << std::endl;
+    //std::cout << "You are invited now" << std::endl;
 }
 
 void Channel::removeMember(Client *clt)
