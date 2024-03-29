@@ -1,10 +1,11 @@
 #include "../includes/client.hpp"
 
 Client::Client(int client_fd) : _client_fd(client_fd),
-    _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _nick(""), _username("")
+    _admPerm(false), _auth(false), _userDef(false), _nickDef(false), _invitePerm(false), _nick(""), _username("")
 {
     std::cout << "Client created" << std::endl;
     _firstAuth = 1;
+    _invitePerm = false;
 }
 
 Client::~Client() {}
@@ -30,54 +31,21 @@ void Client::setNick(std::string nick)
     std::cout << "Your nick is now " << _nick << std::endl;
 }
 
+bool Client::getInvitePerm()
+{
+    return _invitePerm;
+}
+
+void Client::setInvitePerm(bool value)
+{
+    _invitePerm = value;
+}
+
 void Client::setFirstAuth(int firstauth)
 {
     _firstAuth = firstauth;
 }
 
-// void Client::cmdJoinChannel(std::string channel)
-// {
-//     (void)channel;
-// }
-
-// void Client::cmdSendChannel(std::string channel)
-// {
-
-// }
-
-// void Client::cmdSendPrivate(std::string sendPrivate)
-// {
-
-// }
-
-// void Client::cmdReceivePrivate(std::string receivePrivate)
-// {
-
-// }
-
-
-// // operator cmds
-// void Client::cmdKick(std::string kick)
-// {]
-
-// }
-
-// void Client::cmdInvite(std::string invite)
-// {
-
-// }
-
-// void Client::cmdTopic(std::string topic)
-// {
-
-// }
-
-// void Client::cmdMode(std::string mode)
-// {
-
-// }
-
-// getters
 int Client::getFirstAuth()
 {
     return _firstAuth;

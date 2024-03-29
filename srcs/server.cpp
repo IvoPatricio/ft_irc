@@ -307,7 +307,6 @@ int Server::ServerStartUp()
 	            {
 	            	std::cerr << "Buffer Error" << std::endl;
 	            }
-                std::cout << "\nBuffer:" << buf << "\n" << std::endl;
                 if (pollfds[i].fd != 3)
                 {
                     if (((strncmp(buf, "CAP", 3) == 0) || (strncmp(buf, "PASS", 4) == 0 )))

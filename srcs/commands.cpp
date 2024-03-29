@@ -471,6 +471,7 @@ void Command::invite(std::map<std::string, Channel*> &channelMap, Client *clt, s
                                 std::string nickname = it->second->getNick();
                                 if (it->second->getNick() == nick)
                                 {
+                                    it->second->setInvitePerm(1);
                                     sendIrcMessage(clt->getNick() + " invited you to join " + channelName, it->second->getCltFd());
                                     sendIrcMessage(":@localhost 341 " + clt->getNick() + " " + nick + " " + channelName, clt->getCltFd());
                                     return ;
