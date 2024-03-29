@@ -220,7 +220,6 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
         }
         else
         {
-            //invite mode
             sendIrcMessage(":@localhost 473 " + clt->getNick() + " " + channelName + " :Invite only channel", clt->getCltFd());
         }
     }
@@ -276,6 +275,7 @@ void removeUserFromAllChannels(std::map<std::string, Channel*> &channelMap, Clie
 
 void Command::quit(std::map<std::string, Channel*> &channelMap, std::map<int, Client*> &cltMap, Client *clt, int fd)
 {
+    sendIrcMessage(":" + clt->getNick() + "!@localhost QUIT :Quit: Bye for now!" , clt->getCltFd());
     removeUserFromAllChannels(channelMap, clt);
     std::map<int, Client*>::iterator it = cltMap.find(fd);
     if (it != cltMap.end())

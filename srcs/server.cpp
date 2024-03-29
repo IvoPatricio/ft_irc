@@ -124,13 +124,14 @@ int Server::nickChecker(Client *clt, std::string nick)
 void Server::executeCmd(Client *clt, std::string cmd, std::string cmdValue)
 {
     std::cout << "Client_" << clt->getCltFd() << "Executing cmd" << std::endl;
-    if (cmdValue.empty())
+    /*if (cmdValue.empty())
     {
         error_print("No Arguments in cmd");
         return ;
-    }
+    }*/
     if (cmd.compare("QUIT") == 0)
     {
+        std::cout << "entrou" << std::endl;
         Command::quit(_channels, _clients, clt, clt->getCltFd());
     }
     else if (cmd.compare("PRIVMSG") == 0)
