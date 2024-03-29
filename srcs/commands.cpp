@@ -210,7 +210,7 @@ void joinExistinChannel(Channel *channel, Client *clt, std::string channelName)
 // usage -> /JOIN [channeName]
 void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std::string channelNameAndPassword)
 {
-    std::string channelName = channelNameAndPassword.substr(0, channelNameAndPassword.find_first_of(" ") - 1);
+    std::string channelName = channelNameAndPassword.substr(0, channelNameAndPassword.find_first_of(" "));
     std::string channelPassword = getChannelPassword(channelNameAndPassword);
     if(channelName[0] != '#')
     {
@@ -232,6 +232,7 @@ void Command::join(std::map<std::string, Channel*> &channelMap, Client *clt, std
             if (channelMap[channelName]->getPasswordMode())
             {
                 // has password
+                // std::cout << "JOIN COMMAND | CHANNEL PASSWORD -> " << std::endl;
                 if (channelPassword != channelMap[channelName]->getChannelPassword())
                 {
                     sendIrcMessage(":@localhost 475 " + clt->getNick() + " " + channelName + " :Bad channel password", clt->getCltFd());
@@ -573,6 +574,7 @@ void Command::mode(std::map<std::string, Channel*> &channelMap, Client *clt, std
                         it->second->setTopicMode(false);
                     else if (remaining1 == "+k")
                     {
+                        // std::cout << "CHANNEL PASSWORD -> " << remaining2 << std::endl;
                         it->second->setChannelPassword(remaining2);
                         it->second->setPasswordMode(true);
                     }

@@ -188,6 +188,16 @@ void Server::authProcess(Client *clt, char *fullCmd)
         }
     else if (cmd.compare("USER") == 0)
     {
+        if (clt->getUserDef())
+        {
+            sendIrcMessage(":@localhost 462 " + clt->getNick() + " :User already registered" , clt->getCltFd());
+            return ;
+        }
+        if (cmdValue.empty())
+        {
+            sendIrcMessage(":@localhost 461 " + clt->getNick() + " :User already registered" , clt->getCltFd());
+            return ;
+        }
         if (userChecker(clt, cmdValue) == 0)
             Command::username(clt, cmdValue);
     }
